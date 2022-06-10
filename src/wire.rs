@@ -36,7 +36,7 @@ impl Wire {
     }
 
     pub fn read_word(&mut self) -> Word {
-        Word::with_bits(
+        Word::from_bits(
             self.read(BIT_WIDTH)
                 .iter()
                 .rev()

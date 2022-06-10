@@ -47,10 +47,10 @@ fn load(computer: &mut Edvac) {
         (0o1046, inst!(E 0o1042 0o1133 0o1003 0o1003)),
         (0o1034, inst!(H 0o0000 0o0000 0o0000 0o0000)),
         // constants
-        (0o1016, Word::with_bits(0o014_6314_6314_6315 << 1 | 0)), // +1/10
-        (0o1026, Word::with_bits(0o004_6314_6314_6315 << 1 | 0)), // +3/80
-        (0o1035, Word::with_bits(0o120_0000_0000_0000 << 1 | 0)), // +5/8
-        (0o1042, Word::with_bits(0o000_1000_0000_0000 << 1 | 0)), // +2^-10
+        (0o1016, Word::from_bits(0o014_6314_6314_6315 << 1 | 0)), // +1/10
+        (0o1026, Word::from_bits(0o004_6314_6314_6315 << 1 | 0)), // +3/80
+        (0o1035, Word::from_bits(0o120_0000_0000_0000 << 1 | 0)), // +5/8
+        (0o1042, Word::from_bits(0o000_1000_0000_0000 << 1 | 0)), // +2^-10
         (0o1001, (1 << 13).try_into().unwrap()),
     ])
 }
@@ -66,7 +66,7 @@ fn works() {
 
     load(&mut computer);
 
-    computer.low_speed_memory[1].write_word(Word::with_bits(
+    computer.low_speed_memory[1].write_word(Word::from_bits(
         0b0010_0010_0010_0010_0010_0010_0010_0010_0010_0010_0000,
     ));
     while let EdvacStatus::Running = computer.status {
@@ -75,6 +75,6 @@ fn works() {
 
     assert_eq!(
         computer.memory.dump()[0o0001],
-        Word::with_bits(0b00111000111000111000111000111000110010110000)
+        Word::from_bits(0b00111000111000111000111000111000110010110000)
     );
 }

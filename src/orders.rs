@@ -129,7 +129,7 @@ impl Edvac {
     }
 
     fn execute_manual_read(&mut self, dest_a: usize, dest_b: usize, dest_c: usize) -> bool {
-        let value = Word::with_bits(self.state.auxiliary_input_switches.read());
+        let value = Word::from_bits(self.state.auxiliary_input_switches.read());
 
         self.set(dest_a, value);
         self.set(dest_b, value);
@@ -273,7 +273,7 @@ impl Edvac {
             result |= stored_sign;
         }
 
-        self.set(dest, Word::with_bits(result));
+        self.set(dest, Word::from_bits(result));
 
         true
     }

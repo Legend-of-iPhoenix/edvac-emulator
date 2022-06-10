@@ -56,7 +56,7 @@ impl Edvac {
 
     fn read_word_from_wire(&mut self, wire_spool: usize) -> Word {
         if wire_spool == 0 {
-            Word::with_bits(self.state.auxiliary_input_switches.read())
+            Word::from_bits(self.state.auxiliary_input_switches.read())
         } else {
             assert!((1..=3).contains(&wire_spool));
 
