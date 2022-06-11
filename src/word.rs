@@ -24,10 +24,12 @@ impl Word {
         }
     }
 
+    #[must_use]
     pub fn is_negative(&self) -> bool {
         self.value < 0
     }
 
+    #[must_use]
     pub fn get_bits(&self) -> u64 {
         self.rep
     }
@@ -37,6 +39,7 @@ impl Word {
         self.value = Word::from_bits_to_i64(value);
     }
 
+    #[must_use]
     pub fn overflowing_add(&self, rhs: Word) -> (Word, bool) {
         let value = self.value + rhs.value;
 
@@ -47,17 +50,19 @@ impl Word {
         }
     }
 
+    #[must_use]
     pub fn overflowing_sub(&self, rhs: Word) -> (Word, bool) {
         self.overflowing_add(-rhs)
     }
 
+    #[must_use]
     pub fn mul(&self, rhs: Word) -> (Word, Word) {
-        let result = (self.value as i128) * (rhs.value as i128);
+        let result = i128::from(self.value) * i128::from(rhs.value);
 
-        let mut most_significant_word: Word = (((result.abs() >> 43) & U43_MAX as i128) as i64)
+        let mut most_significant_word: Word = (((result.abs() >> 43) & i128::from(U43_MAX)) as i64)
             .try_into()
             .unwrap();
-        let mut least_significant_word: Word = ((result.abs() & (U43_MAX as i128)) as i64)
+        let mut least_significant_word: Word = ((result.abs() & i128::from(U43_MAX)) as i64)
             .try_into()
             .unwrap();
 
@@ -67,12 +72,13 @@ impl Word {
         (most_significant_word, least_significant_word)
     }
 
+    #[must_use]
     pub fn overflowing_div(&self, rhs: Word) -> (Word, Word, bool) {
-        let mut a = (self.value as i128) << 43;
-        let b = rhs.value as i128;
+        let mut a = i128::from(self.value) << 43;
+        let b = i128::from(rhs.value);
 
         let (most_significant_half, mut overflowed) = a.overflowing_div(b);
-        if most_significant_half > U43_MAX as i128 {
+        if most_significant_half > i128::from(U43_MAX) {
             overflowed = true;
         }
 
@@ -80,14 +86,14 @@ impl Word {
 
         let least_significant_half = a.overflowing_div(b).0;
 
-        let mut most_significant_word: Word = ((most_significant_half.abs() & U43_MAX as i128)
+        let mut most_significant_word: Word = ((most_significant_half.abs() & i128::from(U43_MAX))
             as i64)
             .try_into()
             .unwrap();
-        let mut least_significant_word: Word = ((least_significant_half.abs() & (U43_MAX as i128))
-            as i64)
-            .try_into()
-            .unwrap();
+        let mut least_significant_word: Word =
+            ((least_significant_half.abs() & i128::from(U43_MAX)) as i64)
+                .try_into()
+                .unwrap();
 
         most_significant_word.set_sign(most_significant_half < 0);
         least_significant_word.set_sign(most_significant_half < 0);
@@ -102,6 +108,7 @@ impl Word {
         signum * bits
     }
 
+    #[must_use]
     pub fn from_bits(value: u64) -> Word {
         Word {
             rep: value,
@@ -132,7 +139,7 @@ impl TryFrom<i64> for Word {
             Err("Value is too large")
         } else {
             Ok(Word {
-                rep: (abs << 1) | value.is_negative() as u64,
+                rep: (abs << 1) | u64::from(value.is_negative()),
                 value,
             })
         }
@@ -196,7 +203,7 @@ mod tests {
                 ),
             ),
             (
-                (4294967296, 65535),
+                (4_294_967_296, 65535),
                 (
                     0b00000000000000000000000000000000000000111110,
                     0b11111111111000000000000000000000000000000000,

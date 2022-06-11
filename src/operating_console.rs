@@ -16,10 +16,12 @@ impl BinarySwitchArray {
         };
     }
 
+    #[must_use]
     pub fn read(&self) -> u64 {
         self.value
     }
 
+    #[must_use]
     pub fn new(bit_len: usize) -> BinarySwitchArray {
         assert!(bit_len < 64);
 

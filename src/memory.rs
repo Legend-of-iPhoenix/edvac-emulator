@@ -3,7 +3,7 @@ use crate::{operating_console::MemoryMode, word::Word};
 // Most of this comes from Origins+Fate pg. 34
 
 pub const ADDRESS_WIDTH: usize = 10;
-pub const ADDRESS_MASK: u64 = 0b1111111111; // ten bits
+pub const ADDRESS_MASK: u64 = 2_u64.pow(ADDRESS_WIDTH as u32) - 1;
 
 pub struct Memory {
     bank: [Word; 1024],
@@ -18,6 +18,7 @@ impl Default for Memory {
 }
 
 impl Memory {
+    #[must_use]
     pub fn get(&self, addr: usize, mode: MemoryMode) -> Word {
         match mode {
             MemoryMode::L0 => {
@@ -66,6 +67,7 @@ impl Memory {
     }
 
     #[cfg(test)]
+    #[must_use]
     pub fn dump(&self) -> [Word; 1024] {
         self.bank
     }

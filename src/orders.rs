@@ -24,6 +24,7 @@ pub enum OrderKind {
 }
 
 impl OrderKind {
+    #[must_use]
     pub fn from_mneumonic(mneumonic: &str) -> Self {
         match mneumonic {
             "C" => Self::Compare,
@@ -37,6 +38,38 @@ impl OrderKind {
             "d" => Self::DivExact,
             "H" => Self::Halt,
             _ => panic!(),
+        }
+    }
+}
+
+impl From<Word> for OrderKind {
+    fn from(word: Word) -> Self {
+        let bits = word.get_bits();
+        // Sources: several- the most useful (I feel) was FuncDesc section 2.6.1
+        match (bits & 0b1111) as u8 {
+            0b0010 /* +1 */ => OrderKind::Compare,
+
+            // Per Origins+Fate pg. 28-29, the "Visual" order was thrown out and
+            // became the "Manual Read" order before or during the construction.
+            0b0011 /* -1 */ => OrderKind::ManualRead,
+
+            0b0100 /* +2 */ => OrderKind::Add,
+            0b0101 /* -2 */ => OrderKind::Wire,
+            0b0110 /* +3 */ => OrderKind::Sub,
+            0b0111 /* -3 */ => OrderKind::Extract,
+            0b1000 /* +4 */ => OrderKind::Mul,
+            0b1001 /* -4 */ => OrderKind::MulExact,
+            0b1010 /* +5 */ => OrderKind::Div,
+            0b1011 /* -5 */ => OrderKind::DivExact,
+            0b1100 /* +6 */ => OrderKind::Halt,
+
+            0b0000 /* +0 */ |
+            0b0001 /* -0 */ |
+            0b1110 /* +7 */ |
+            0b1111 /* -7 */ |
+            0b1101 /* -6 */ => OrderKind::Unused,
+
+            _ => unreachable!(),
         }
     }
 }
@@ -63,32 +96,7 @@ impl From<Word> for Order {
         ];
 
         Order {
-            // Sources: Several- the most thorough was in FuncDesc section 2.6.1
-            kind: match (bits & 0b1111) as u8 {
-                0b0010 /* +1 */ => OrderKind::Compare,
-
-                // Per Origins+Fate pg. 28-29, the "Visual" order was thrown out
-                // and became the "Manual Read" order before/during construction
-                0b0011 /* -1 */ => OrderKind::ManualRead,
-
-                0b0100 /* +2 */ => OrderKind::Add,
-                0b0101 /* -2 */ => OrderKind::Wire,
-                0b0110 /* +3 */ => OrderKind::Sub,
-                0b0111 /* -3 */ => OrderKind::Extract,
-                0b1000 /* +4 */ => OrderKind::Mul,
-                0b1001 /* -4 */ => OrderKind::MulExact,
-                0b1010 /* +5 */ => OrderKind::Div,
-                0b1011 /* -5 */ => OrderKind::DivExact,
-                0b1100 /* +6 */ => OrderKind::Halt,
-
-                0b0000 /* +0 */ |
-                0b0001 /* -0 */ |
-                0b1110 /* +7 */ |
-                0b1111 /* -7 */ |
-                0b1101 /* -6 */ => OrderKind::Unused,
-
-                _ => unreachable!(),
-            },
+            kind: word.into(),
             addresses,
         }
     }
@@ -236,7 +244,8 @@ impl Edvac {
         let mut result = self.get(dest).get_bits();
 
         let sub_order_code = shift_code & 0b111;
-        let mut shift_amount = (shift_code >> 3) & 0b111111;
+        #[allow(clippy::unusual_byte_groupings)]
+        let mut shift_amount = (shift_code >> 3) & 0b111_111;
         let shift_direction = (shift_code >> 9) & 0b1; // sanity check
 
         // see the top of FuncDesc pg. "2-48"
@@ -327,7 +336,7 @@ impl Edvac {
 
     /// Decodes and executes the *provided* order, returning the next order that
     /// is along the execution path, or None.
-    pub fn execute_once(&mut self, order: Order) -> Option<usize> {
+    pub fn execute_once(&mut self, order: &Order) -> Option<usize> {
         let [a1, a2, a3, a4] = order.addresses;
 
         let do_continue = match order.kind {
@@ -368,7 +377,7 @@ impl Edvac {
             order.addresses[2],
             order.addresses[3]
         );
-        if let Some(next_address) = self.execute_once(order) {
+        if let Some(next_address) = self.execute_once(&order) {
             self.state.initial_address_register = next_address;
         }
     }

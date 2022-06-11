@@ -24,13 +24,14 @@ impl Default for EdvacStatus {
     }
 }
 
+#[derive(Default)]
 pub struct Edvac {
     pub state: operating_console::State,
     pub memory: memory::Memory,
 
     pub status: EdvacStatus,
 
-    pub low_speed_memory: [Box<wire::Wire>; 3],
+    pub low_speed_memory: [wire::Wire; 3],
 }
 
 impl Edvac {
@@ -51,7 +52,8 @@ impl Edvac {
             val.get_bits(),
             self.memory.get(addr, self.state.memory_mode).get_bits(),
         );
-        self.memory.set(addr, self.state.memory_mode, val)
+
+        self.memory.set(addr, self.state.memory_mode, val);
     }
 
     fn read_word_from_wire(&mut self, wire_spool: usize) -> Word {
@@ -78,9 +80,10 @@ impl Edvac {
             word.get_bits(),
             wire_spool
         );
+
         assert!((1..=3).contains(&wire_spool));
 
-        self.low_speed_memory[wire_spool - 1].write_word(word)
+        self.low_speed_memory[wire_spool - 1].write_word(word);
     }
 
     fn translate_wire(&mut self, wire_spool: usize, shift: WireShift) {

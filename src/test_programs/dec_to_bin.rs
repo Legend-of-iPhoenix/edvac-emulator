@@ -1,4 +1,4 @@
-//! This program comes from https://doi.org/10.2307/2002881
+//! This program comes from <https://doi.org/10.2307/2002881>
 
 use crate::{word::Word, Edvac, EdvacStatus};
 
@@ -47,22 +47,17 @@ fn load(computer: &mut Edvac) {
         (0o1046, inst!(E 0o1042 0o1133 0o1003 0o1003)),
         (0o1034, inst!(H 0o0000 0o0000 0o0000 0o0000)),
         // constants
-        (0o1016, Word::from_bits(0o014_6314_6314_6315 << 1 | 0)), // +1/10
-        (0o1026, Word::from_bits(0o004_6314_6314_6315 << 1 | 0)), // +3/80
-        (0o1035, Word::from_bits(0o120_0000_0000_0000 << 1 | 0)), // +5/8
-        (0o1042, Word::from_bits(0o000_1000_0000_0000 << 1 | 0)), // +2^-10
+        (0o1016, Word::from_bits(0o014_6314_6314_6315 << 1)), // +1/10
+        (0o1026, Word::from_bits(0o004_6314_6314_6315 << 1)), // +3/80
+        (0o1035, Word::from_bits(0o120_0000_0000_0000 << 1)), // +5/8
+        (0o1042, Word::from_bits(0o000_1000_0000_0000 << 1)), // +2^-10
         (0o1001, (1 << 13).try_into().unwrap()),
-    ])
+    ]);
 }
 
 #[test]
 fn works() {
-    let mut computer = Edvac {
-        state: Default::default(),
-        memory: Default::default(),
-        status: Default::default(),
-        low_speed_memory: Default::default(),
-    };
+    let mut computer = Edvac::default();
 
     load(&mut computer);
 

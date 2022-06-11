@@ -7,6 +7,7 @@ use crate::{
 
 const WIRE_SIZE: usize = 50000 * BIT_WIDTH;
 
+#[derive(Copy, Clone)]
 pub enum WireShift {
     Forward(usize),
     Backward(usize),
