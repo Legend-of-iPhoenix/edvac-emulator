@@ -1,33 +1,4 @@
-//
-// todo: bin-octal switches
-pub struct BinarySwitchArray {
-    value: u64,
-    bit_len: usize,
-}
-
-impl BinarySwitchArray {
-    pub fn switch_set(&mut self, index: usize, switch_value: bool) {
-        assert!(index < self.bit_len);
-
-        self.value = if switch_value {
-            self.value | 0b1 << index
-        } else {
-            self.value & !(0b1 << index)
-        };
-    }
-
-    #[must_use]
-    pub fn read(&self) -> u64 {
-        self.value
-    }
-
-    #[must_use]
-    pub fn new(bit_len: usize) -> BinarySwitchArray {
-        assert!(bit_len < 64);
-
-        BinarySwitchArray { value: 0, bit_len }
-    }
-}
+use crate::word::Word;
 
 // Origins+Fate pg. 34
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -69,11 +40,11 @@ pub struct State {
     pub excess_capacity_action: ExcessCapacityAction,
     pub memory_mode: MemoryMode,
 
-    pub auxiliary_input_switches: BinarySwitchArray,
+    pub auxiliary_input_switches: Word,
 
-    pub special_order_switches: BinarySwitchArray,
-    pub address_a_switches: BinarySwitchArray,
-    pub address_b_switches: BinarySwitchArray,
+    pub special_order_switches: Word,
+    pub address_a_switches: usize,
+    pub address_b_switches: usize,
 }
 
 impl Default for State {
@@ -83,11 +54,11 @@ impl Default for State {
             excess_capacity_action: Default::default(),
             memory_mode: Default::default(),
 
-            auxiliary_input_switches: BinarySwitchArray::new(44),
+            auxiliary_input_switches: 0_i64.try_into().unwrap(),
 
-            special_order_switches: BinarySwitchArray::new(44),
-            address_a_switches: BinarySwitchArray::new(10),
-            address_b_switches: BinarySwitchArray::new(10),
+            special_order_switches: 0_i64.try_into().unwrap(),
+            address_a_switches: 0,
+            address_b_switches: 0,
         }
     }
 }

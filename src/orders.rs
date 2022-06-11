@@ -132,7 +132,7 @@ impl Edvac {
     }
 
     fn execute_manual_read(&mut self, addresses: [usize; 4]) {
-        let value = Word::from_bits(self.state.auxiliary_input_switches.read());
+        let value = Word::from_bits(self.state.auxiliary_input_switches.get_bits());
 
         self.set(addresses[0], value);
         self.set(addresses[1], value);
