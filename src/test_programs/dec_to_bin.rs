@@ -3,7 +3,7 @@
 use crate::{word::Word, Edvac, EdvacStatus};
 
 fn load(computer: &mut Edvac) {
-    computer.memory.load(vec![
+    computer.high_speed_memory.load(vec![
         (0o0000, inst!(E 0o1001 0o0003 0o1003 0o1003)),
         (0o1003, inst!(W 0o0001 0o0202 0o0000 0o1002)),
         (0o1002, inst!(E 0o1003 0o0241 0o1006 0o1007)),
@@ -64,12 +64,13 @@ fn works() {
     computer.low_speed_memory[1].write_word(Word::from_bits(
         0b0010_0010_0010_0010_0010_0010_0010_0010_0010_0010_0000,
     ));
+
     while let EdvacStatus::Running = computer.status {
         computer.step_once();
     }
 
     assert_eq!(
-        computer.memory.dump()[0o0001],
+        computer.high_speed_memory.dump()[0o0001],
         Word::from_bits(0b00111000111000111000111000111000110010110000)
     );
 }

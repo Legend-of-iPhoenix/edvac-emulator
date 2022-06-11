@@ -1,7 +1,7 @@
 use crate::word::Word;
 use wire::WireShift;
 
-pub mod memory;
+pub mod high_speed_memory;
 pub mod operating_console;
 #[macro_use]
 pub mod order_macros;
@@ -27,22 +27,34 @@ impl Default for EdvacStatus {
 #[derive(Default)]
 pub struct Edvac {
     pub state: operating_console::State,
-    pub memory: memory::Memory,
+    pub high_speed_memory: high_speed_memory::HighSpeedMemory,
 
     pub status: EdvacStatus,
 
     pub low_speed_memory: [wire::Wire; 3],
 }
 
+/// # General
+impl Edvac {
+    fn halt(&mut self, resume_addr: usize) {
+        self.status = EdvacStatus::Halted { resume_addr };
+    }
+}
+
+/// # High-speed memory operations
 impl Edvac {
     fn get(&self, addr: usize) -> Word {
         println!(
             "Get {:0>4o}:   {:0>44b} ({})",
             addr,
-            self.memory.get(addr, self.state.memory_mode).get_bits(),
-            self.memory.get(addr, self.state.memory_mode).value,
+            self.high_speed_memory
+                .get(addr, self.state.memory_mode)
+                .get_bits(),
+            self.high_speed_memory
+                .get(addr, self.state.memory_mode)
+                .value,
         );
-        self.memory.get(addr, self.state.memory_mode)
+        self.high_speed_memory.get(addr, self.state.memory_mode)
     }
 
     fn set(&mut self, addr: usize, val: Word) {
@@ -50,12 +62,18 @@ impl Edvac {
             "Set {:0>4o} to {:0>44b}\n        was {:0>44b}",
             addr,
             val.get_bits(),
-            self.memory.get(addr, self.state.memory_mode).get_bits(),
+            self.high_speed_memory
+                .get(addr, self.state.memory_mode)
+                .get_bits(),
         );
 
-        self.memory.set(addr, self.state.memory_mode, val);
+        self.high_speed_memory
+            .set(addr, self.state.memory_mode, val);
     }
+}
 
+/// # Low-speed Memory operations
+impl Edvac {
     fn read_word_from_wire(&mut self, wire_spool: usize) -> Word {
         if wire_spool == 0 {
             Word::from_bits(self.state.auxiliary_input_switches.read())

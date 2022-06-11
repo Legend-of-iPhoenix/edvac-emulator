@@ -1,9 +1,9 @@
 use crate::{
-    memory::{ADDRESS_MASK, ADDRESS_WIDTH},
+    high_speed_memory::{ADDRESS_MASK, ADDRESS_WIDTH},
     operating_console::ExcessCapacityAction,
     wire::WireShift,
     word::{Word, BIT_WIDTH, U43_MAX},
-    Edvac, EdvacStatus,
+    Edvac,
 };
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -103,61 +103,63 @@ impl From<Word> for Order {
 }
 
 impl Edvac {
-    fn handle_overflow(&mut self, resume_addr: usize) -> bool {
+    fn handle_overflow(&mut self, resume_addr: usize) {
         println!("Overflow");
         match self.state.excess_capacity_action {
             ExcessCapacityAction::Halt => {
                 self.halt(resume_addr);
-                false
             }
-            ExcessCapacityAction::Ignore => true,
+            ExcessCapacityAction::Ignore => {
+                self.state.initial_address_register = resume_addr;
+            }
             ExcessCapacityAction::ExecuteSpecial => todo!(),
             ExcessCapacityAction::ExecuteAddressB => todo!(),
         }
     }
 
-    fn execute_compare(
-        &mut self,
-        a: Word,
-        b: Word,
-        if_negative: usize,
-        if_positive: usize,
-    ) -> bool {
+    fn execute_compare(&mut self, addresses: [usize; 4]) {
+        let a = self.get(addresses[0]);
+        let b = self.get(addresses[1]);
         let (difference, _did_overflow) = a.overflowing_sub(b);
 
         let resume_addr = if difference.is_negative() {
-            if_negative
+            addresses[2]
         } else {
-            if_positive // or zero
+            addresses[3] // or zero
         };
 
         self.state.initial_address_register = resume_addr;
-
-        false
     }
 
-    fn execute_manual_read(&mut self, dest_a: usize, dest_b: usize, dest_c: usize) -> bool {
+    fn execute_manual_read(&mut self, addresses: [usize; 4]) {
         let value = Word::from_bits(self.state.auxiliary_input_switches.read());
 
-        self.set(dest_a, value);
-        self.set(dest_b, value);
-        self.set(dest_c, value);
+        self.set(addresses[0], value);
+        self.set(addresses[1], value);
+        self.set(addresses[2], value);
 
-        true
+        self.state.initial_address_register = addresses[3];
     }
 
-    fn execute_add(&mut self, a: Word, b: Word, dest: usize, next_addr: usize) -> bool {
+    fn execute_add(&mut self, addresses: [usize; 4]) {
+        let a = self.get(addresses[0]);
+        let b = self.get(addresses[1]);
         let (sum, did_overflow) = a.overflowing_add(b);
 
-        self.set(dest, sum);
+        self.set(addresses[2], sum);
         if did_overflow {
-            self.handle_overflow(next_addr)
+            self.handle_overflow(addresses[3]);
         } else {
-            true
+            self.state.initial_address_register = addresses[3];
         }
     }
 
-    fn execute_wire(&mut self, start: usize, sub_order: usize, end: usize) -> bool {
+    fn execute_wire(&mut self, addresses: [usize; 4]) {
+        let start = addresses[0];
+        let sub_order = addresses[1];
+        let end = addresses[2];
+
+        let next_addr = addresses[3];
         // Decoding for the sub-order is clearly described in FuncDesc pg "6-16"
         // section 6.3.7
         let backward = ((sub_order >> 9) & 0b1) != 0;
@@ -172,12 +174,9 @@ impl Edvac {
             operation = 0o2;
         }
 
-        if backward && operation == 0o3 {
-            // halt!
-        }
-
-        if wire_spool == 0 && operation == 0o0 {
-            // halt!
+        if backward && operation == 0o3 || wire_spool == 0 && operation == 0o0 {
+            self.halt(next_addr);
+            return;
         }
 
         // FuncDesc Diagram 104-4LC-3 "Wire Order Selector"
@@ -189,7 +188,7 @@ impl Edvac {
 
             match operation {
                 0o0 => {
-                    // Translate
+                    // Translate, do nothing
                 }
                 0o1 => {
                     // Record (Memory -> Wire)
@@ -202,7 +201,7 @@ impl Edvac {
                     self.set(mem_index, word);
                 }
                 0o3 => {
-                    // Read 5th Addr.
+                    // Read 5th Addr (a.k.a. R5A)
                     mem_index = self.read_address_from_wire(wire_spool);
                     self.translate_wire(wire_spool, WireShift::Forward(ADDRESS_WIDTH));
                     let word = self.read_word_from_wire(wire_spool);
@@ -216,33 +215,40 @@ impl Edvac {
             }
 
             if mem_index == end {
-                return true;
-            }
+                self.state.initial_address_register = addresses[3];
 
-            if operation != 0o3 {
+                return;
+            } else {
+                // this does nothing if operation == read fifth address, because
+                // mem_index gets reset later
                 mem_index = (mem_index + 1) & ADDRESS_MASK as usize;
             }
         }
     }
 
-    fn execute_sub(&mut self, a: Word, b: Word, dest: usize, next_addr: usize) -> bool {
+    fn execute_sub(&mut self, addresses: [usize; 4]) {
+        let a = self.get(addresses[0]);
+        let b = self.get(addresses[1]);
         let (difference, did_overflow) = a.overflowing_sub(b);
 
-        self.set(dest, difference);
+        self.set(addresses[2], difference);
+
         if did_overflow {
-            self.handle_overflow(next_addr)
+            self.handle_overflow(addresses[3]);
         } else {
-            true
+            self.state.initial_address_register = addresses[3];
         }
     }
 
-    fn execute_extract(&mut self, a: Word, shift_code: usize, dest: usize) -> bool {
-        let mut a = a.get_bits();
+    fn execute_extract(&mut self, addresses: [usize; 4]) {
+        let mut a = self.get(addresses[0]).get_bits();
         let stored_sign = a & 0b1;
         a &= !0b1;
 
+        let dest = addresses[2];
         let mut result = self.get(dest).get_bits();
 
+        let shift_code = addresses[1];
         let sub_order_code = shift_code & 0b111;
         #[allow(clippy::unusual_byte_groupings)]
         let mut shift_amount = (shift_code >> 3) & 0b111_111;
@@ -258,11 +264,6 @@ impl Edvac {
         } else {
             a >> shift_amount
         };
-
-        println!(
-            "            {:0>44b} {} {}",
-            shifted, shift_amount, shift_direction
-        );
 
         let mask = match sub_order_code {
             0o1 => ADDRESS_MASK << 34,
@@ -284,31 +285,30 @@ impl Edvac {
 
         self.set(dest, Word::from_bits(result));
 
-        true
+        self.state.initial_address_register = addresses[3];
     }
 
-    fn execute_mul(&mut self, a: Word, b: Word, dest: usize, exact: bool) -> bool {
+    fn execute_mul(&mut self, addresses: [usize; 4], exact: bool) {
+        let a = self.get(addresses[0]);
+        let b = self.get(addresses[1]);
         let (rounded, extra_precision) = a.mul(b);
 
+        let dest = addresses[2];
         self.set(dest, rounded);
 
         if exact {
             self.set((dest + 1) & ADDRESS_MASK as usize, extra_precision);
         }
 
-        true
+        self.state.initial_address_register = addresses[3];
     }
 
-    fn execute_div(
-        &mut self,
-        a: Word,
-        b: Word,
-        dest: usize,
-        exact: bool,
-        next_addr: usize,
-    ) -> bool {
+    fn execute_div(&mut self, addresses: [usize; 4], exact: bool) {
+        let a = self.get(addresses[0]);
+        let b = self.get(addresses[1]);
         let (rounded, extra_precision, overflow) = a.overflowing_div(b);
 
+        let dest = addresses[2];
         self.set(dest, rounded);
 
         if exact {
@@ -316,49 +316,37 @@ impl Edvac {
         }
 
         if overflow {
-            self.handle_overflow(next_addr)
+            self.handle_overflow(addresses[3]);
         } else {
-            true
+            self.state.initial_address_register = addresses[3];
         }
     }
 
     // This is for executing the order `Halt`; `Edvac::halt` is for whenever the
     // machine needs to stop.
-    fn execute_halt(&mut self, resume_addr: usize) -> bool {
-        self.halt(resume_addr);
-
-        false
-    }
-
-    fn halt(&mut self, resume_addr: usize) {
-        self.status = EdvacStatus::Halted { resume_addr };
+    fn execute_halt(&mut self, addresses: [usize; 4]) {
+        self.halt(addresses[3]);
     }
 
     /// Decodes and executes the *provided* order, returning the next order that
     /// is along the execution path, or None.
-    pub fn execute_once(&mut self, order: &Order) -> Option<usize> {
-        let [a1, a2, a3, a4] = order.addresses;
+    pub fn execute_once(&mut self, order: &Order) {
+        let addresses = order.addresses;
 
-        let do_continue = match order.kind {
-            OrderKind::Compare => self.execute_compare(self.get(a1), self.get(a2), a3, a4),
-            OrderKind::ManualRead => self.execute_manual_read(a1, a2, a3),
-            OrderKind::Add => self.execute_add(self.get(a1), self.get(a2), a3, a4),
-            OrderKind::Wire => self.execute_wire(a1, a2, a3),
-            OrderKind::Sub => self.execute_sub(self.get(a1), self.get(a2), a3, a4),
-            OrderKind::Extract => self.execute_extract(self.get(a1), a2, a3),
-            OrderKind::Mul => self.execute_mul(self.get(a1), self.get(a2), a3, false),
-            OrderKind::MulExact => self.execute_mul(self.get(a1), self.get(a2), a3, true),
-            OrderKind::Div => self.execute_div(self.get(a1), self.get(a2), a3, false, a4),
-            OrderKind::DivExact => self.execute_div(self.get(a1), self.get(a2), a3, true, a4),
-            OrderKind::Halt => self.execute_halt(a4),
+        match order.kind {
+            OrderKind::Compare => self.execute_compare(addresses),
+            OrderKind::ManualRead => self.execute_manual_read(addresses),
+            OrderKind::Add => self.execute_add(addresses),
+            OrderKind::Wire => self.execute_wire(addresses),
+            OrderKind::Sub => self.execute_sub(addresses),
+            OrderKind::Extract => self.execute_extract(addresses),
+            OrderKind::Mul => self.execute_mul(addresses, false),
+            OrderKind::MulExact => self.execute_mul(addresses, true),
+            OrderKind::Div => self.execute_div(addresses, false),
+            OrderKind::DivExact => self.execute_div(addresses, true),
+            OrderKind::Halt => self.execute_halt(addresses),
 
             OrderKind::Unused => todo!(),
-        };
-
-        if do_continue {
-            Some(a4)
-        } else {
-            None
         }
     }
 
@@ -377,8 +365,7 @@ impl Edvac {
             order.addresses[2],
             order.addresses[3]
         );
-        if let Some(next_address) = self.execute_once(&order) {
-            self.state.initial_address_register = next_address;
-        }
+
+        self.execute_once(&order);
     }
 }

@@ -5,19 +5,19 @@ use crate::{operating_console::MemoryMode, word::Word};
 pub const ADDRESS_WIDTH: usize = 10;
 pub const ADDRESS_MASK: u64 = 2_u64.pow(ADDRESS_WIDTH as u32) - 1;
 
-pub struct Memory {
+pub struct HighSpeedMemory {
     bank: [Word; 1024],
 }
 
-impl Default for Memory {
+impl Default for HighSpeedMemory {
     fn default() -> Self {
-        Memory {
+        HighSpeedMemory {
             bank: [0_i64.try_into().unwrap(); 1024],
         }
     }
 }
 
-impl Memory {
+impl HighSpeedMemory {
     #[must_use]
     pub fn get(&self, addr: usize, mode: MemoryMode) -> Word {
         match mode {

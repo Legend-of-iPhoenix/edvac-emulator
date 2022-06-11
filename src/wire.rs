@@ -1,7 +1,7 @@
 use bitvec::prelude::*;
 
 use crate::{
-    memory::ADDRESS_WIDTH,
+    high_speed_memory::ADDRESS_WIDTH,
     word::{Word, BIT_WIDTH},
 };
 
