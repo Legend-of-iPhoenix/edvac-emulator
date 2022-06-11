@@ -7,4 +7,12 @@ edition = "2021"
 
 [dependencies]
 bitvec = "1.0.0"
-iced = "0.4"
+iced = "0.3"
+# while this is a non-audio project, there are really nice knobs in iced_audio
+iced_audio = "0.7"
+
+[[bin]]
+name = "edvac-emulator"
+path = "src/bin.rs"
+
+[lib]
