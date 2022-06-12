@@ -37,7 +37,8 @@ impl Default for ExcessCapacityAction {
 
 pub struct State {
     pub initial_address_register: usize,
-    pub excess_capacity_action: ExcessCapacityAction,
+    pub excess_capacity_action_add: ExcessCapacityAction,
+    pub excess_capacity_action_div: ExcessCapacityAction,
     pub memory_mode: MemoryMode,
 
     pub auxiliary_input_switches: Word,
@@ -51,7 +52,9 @@ impl Default for State {
     fn default() -> Self {
         State {
             initial_address_register: 0,
-            excess_capacity_action: Default::default(),
+            excess_capacity_action_add: Default::default(),
+            excess_capacity_action_div: Default::default(),
+
             memory_mode: Default::default(),
 
             auxiliary_input_switches: 0_i64.try_into().unwrap(),

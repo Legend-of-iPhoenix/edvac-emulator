@@ -103,17 +103,30 @@ impl From<Word> for Order {
 }
 
 impl Edvac {
-    fn handle_overflow(&mut self, resume_addr: usize) {
+    fn handle_overflow(&mut self, is_div: bool, resume_addr: usize) {
         println!("Overflow");
-        match self.state.excess_capacity_action {
+
+        let action = if is_div {
+            self.state.excess_capacity_action_div
+        } else {
+            self.state.excess_capacity_action_add
+        };
+
+        match action {
             ExcessCapacityAction::Halt => {
                 self.halt(resume_addr);
             }
             ExcessCapacityAction::Ignore => {
                 self.state.initial_address_register = resume_addr;
             }
-            ExcessCapacityAction::ExecuteSpecial => todo!(),
-            ExcessCapacityAction::ExecuteAddressB => todo!(),
+            ExcessCapacityAction::ExecuteSpecial => {
+                self.execute_once(&self.state.special_order_switches.into());
+                self.state.initial_address_register = resume_addr; // overwrite!
+            }
+            ExcessCapacityAction::ExecuteAddressB => {
+                self.execute_once(&self.get(self.state.address_b_switches).into());
+                self.state.initial_address_register = resume_addr; // overwrite!
+            }
         }
     }
 
@@ -125,7 +138,7 @@ impl Edvac {
         let resume_addr = if difference.is_negative() {
             addresses[2]
         } else {
-            addresses[3] // or zero
+            addresses[3] // positive or zero
         };
 
         self.state.initial_address_register = resume_addr;
@@ -148,7 +161,7 @@ impl Edvac {
 
         self.set(addresses[2], sum);
         if did_overflow {
-            self.handle_overflow(addresses[3]);
+            self.handle_overflow(false, addresses[3]);
         } else {
             self.state.initial_address_register = addresses[3];
         }
@@ -168,6 +181,7 @@ impl Edvac {
         let mut operation = (sub_order >> 6) & 0b011;
 
         // According to page "6-4" wire #0 is not a wire but a mode of operation
+        // uses the special input switches on the operator console
         let wire_spool = sub_order & 0b11;
 
         if wire_spool == 0 && operation == 0o3 {
@@ -234,7 +248,7 @@ impl Edvac {
         self.set(addresses[2], difference);
 
         if did_overflow {
-            self.handle_overflow(addresses[3]);
+            self.handle_overflow(false, addresses[3]);
         } else {
             self.state.initial_address_register = addresses[3];
         }
@@ -315,8 +329,10 @@ impl Edvac {
             self.set((dest + 1) & ADDRESS_MASK as usize, extra_precision);
         }
 
+        // to-do: Note about rounded division on FuncDesc 4-31
+
         if overflow {
-            self.handle_overflow(addresses[3]);
+            self.handle_overflow(true, addresses[3]);
         } else {
             self.state.initial_address_register = addresses[3];
         }
