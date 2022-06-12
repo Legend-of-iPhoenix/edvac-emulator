@@ -73,3 +73,9 @@ impl SpecialOrderInput {
             .into()
     }
 }
+
+impl Default for SpecialOrderInput {
+    fn default() -> Self {
+        Self::new()
+    }
+}

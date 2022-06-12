@@ -19,7 +19,7 @@ impl Default for MemoryMode {
 // *not* "determine the position of the next order to be executed". Origins+Fate
 // makes no mention of this, and even goes on to describe the last position as a
 // "Jump", which implies (at least, in my opinion) that they *do*. I think it is
-// somewhat more likely that the author of FuncDesc was blind to this aside than
+// somewhat more probable that the author of Origins+Fate ignored this note than
 // this particular implementation detail changing in the middle of construction.
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum ExcessCapacityAction {

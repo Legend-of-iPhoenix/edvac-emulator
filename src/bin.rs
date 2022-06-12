@@ -17,6 +17,8 @@ pub fn main() {
 pub struct App {
     computer: Edvac,
 
+    excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions,
+
     address_a: address_input::AddressInput,
     address_b: address_input::AddressInput,
 
@@ -25,6 +27,7 @@ pub struct App {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    ExcessMagnitudeOptions(excess_magnitude_options::Message),
     AddressA(address_input::Message),
     AddressB(address_input::Message),
     SpecialOrder(special_order_input::Message),
@@ -37,10 +40,12 @@ impl Sandbox for App {
         App {
             computer: Edvac::default(),
 
+            excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions::default(),
+
             address_a: address_input::AddressInput::new("ADDRESS A"),
             address_b: address_input::AddressInput::new("ADDRESS B"),
 
-            special_order: special_order_input::SpecialOrderInput::new(),
+            special_order: special_order_input::SpecialOrderInput::default(),
         }
     }
 
@@ -50,6 +55,12 @@ impl Sandbox for App {
 
     fn update(&mut self, message: Self::Message) {
         match message {
+            Message::ExcessMagnitudeOptions(m) => {
+                let (add, div) = self.excess_magnitude_options.update(m);
+
+                self.computer.state.excess_capacity_action_add = add;
+                self.computer.state.excess_capacity_action_div = div;
+            }
             Message::AddressA(m) => {
                 self.computer.state.address_a_switches = self.address_a.update(m);
             }
@@ -64,6 +75,11 @@ impl Sandbox for App {
 
     fn view(&mut self) -> Element<Self::Message> {
         Column::new()
+            .push(
+                self.excess_magnitude_options
+                    .view()
+                    .map(Message::ExcessMagnitudeOptions),
+            )
             .push(
                 Row::new()
                     .push(self.address_a.view().map(Message::AddressA))
