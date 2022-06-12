@@ -4,7 +4,7 @@ mod ui;
 
 use ui::*;
 
-use iced::{Element, Sandbox, Settings};
+use iced::{Element, Row, Sandbox, Settings};
 
 pub fn main() {
     App::run(Settings {
@@ -15,14 +15,16 @@ pub fn main() {
 }
 
 pub struct App {
-    _computer: Edvac,
+    computer: Edvac,
 
     address_a: address_input::AddressInput,
+    address_b: address_input::AddressInput,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    AddressInputMessage(address_input::AddressInputMessage),
+    AddressA(address_input::Message),
+    AddressB(address_input::Message),
 }
 
 impl Sandbox for App {
@@ -30,8 +32,9 @@ impl Sandbox for App {
 
     fn new() -> Self {
         App {
-            _computer: Edvac::default(),
-            address_a: address_input::AddressInput::default(),
+            computer: Edvac::default(),
+            address_a: address_input::AddressInput::new("ADDRESS A"),
+            address_b: address_input::AddressInput::new("ADDRESS B"),
         }
     }
 
@@ -41,11 +44,19 @@ impl Sandbox for App {
 
     fn update(&mut self, message: Self::Message) {
         match message {
-            Message::AddressInputMessage(m) => self.address_a.update(m),
+            Message::AddressA(m) => {
+                self.computer.state.address_a_switches = self.address_a.update(m);
+            }
+            Message::AddressB(m) => {
+                self.computer.state.address_b_switches = self.address_b.update(m);
+            }
         }
     }
 
     fn view(&mut self) -> Element<Self::Message> {
-        self.address_a.view().map(Message::AddressInputMessage)
+        Row::new()
+            .push(self.address_a.view().map(Message::AddressA))
+            .push(self.address_b.view().map(Message::AddressB))
+            .into()
     }
 }

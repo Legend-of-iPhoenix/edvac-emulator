@@ -1,8 +1,6 @@
-use iced::{Element, Row};
+use iced::{Align, Column, Element, Row, Text};
 
-use iced_audio::{
-    knob, text_marks, tick_marks, IntRange, Knob, Normal,
-};
+use iced_audio::{knob, text_marks, tick_marks, IntRange, Knob, Normal};
 
 use super::style::knob::{BinaryKnobStyle, OctalKnobStyle};
 
@@ -22,19 +20,21 @@ pub struct AddressInput {
     octal_text_marks: text_marks::Group,
 
     octal_states: (knob::State, knob::State, knob::State),
+
+    title: String,
 }
 
 #[derive(Debug, Clone)]
-pub enum AddressInputMessage {
-    BinChanged(Normal),
+pub enum Message {
+    Bin(Normal),
 
-    Octal0Changed(Normal),
-    Octal1Changed(Normal),
-    Octal2Changed(Normal),
+    Octal0(Normal),
+    Octal1(Normal),
+    Octal2(Normal),
 }
 
 impl AddressInput {
-    pub fn new() -> AddressInput {
+    pub fn new(title: &str) -> AddressInput {
         let bin_range = IntRange::new(0, 1);
         let octal_range = IntRange::new(0, 7);
         AddressInput {
@@ -55,62 +55,67 @@ impl AddressInput {
                 knob::State::new(octal_range.default_normal_param()),
                 knob::State::new(octal_range.default_normal_param()),
             ),
+
+            title: title.into(),
         }
     }
 
-    pub fn update(&mut self, message: AddressInputMessage) {
+    pub fn update(&mut self, message: Message) -> usize {
         match message {
-            AddressInputMessage::BinChanged(_) => self.bin_state.snap_visible_to(&self.bin_range),
-            AddressInputMessage::Octal0Changed(_) => {
-                self.octal_states.0.snap_visible_to(&self.octal_range)
-            }
-            AddressInputMessage::Octal1Changed(_) => {
-                self.octal_states.1.snap_visible_to(&self.octal_range)
-            }
-            AddressInputMessage::Octal2Changed(_) => {
-                self.octal_states.2.snap_visible_to(&self.octal_range)
-            }
+            Message::Bin(_) => self.bin_state.snap_visible_to(&self.bin_range),
+            Message::Octal0(_) => self.octal_states.0.snap_visible_to(&self.octal_range),
+            Message::Octal1(_) => self.octal_states.1.snap_visible_to(&self.octal_range),
+            Message::Octal2(_) => self.octal_states.2.snap_visible_to(&self.octal_range),
         }
+
+        let values: (usize, usize, usize, usize) = (
+            (self.bin_state.normal().scale(1.0) as usize) & 0b1,
+            (self.octal_states.0.normal().scale(7.0) as usize) & 0b111,
+            (self.octal_states.1.normal().scale(7.0) as usize) & 0b111,
+            (self.octal_states.2.normal().scale(7.0) as usize) & 0b111,
+        );
+
+        (values.0 << 9) | (values.1 << 6) | (values.2 << 3) | values.3
     }
 
-    pub fn view(&mut self) -> Element<AddressInputMessage> {
-        Row::new()
-            .spacing(50)
+    pub fn view(&mut self) -> Element<Message> {
+        Column::new()
             .padding(50)
+            .spacing(10)
+            .align_items(Align::Center)
             .push(
-                Knob::new(&mut self.bin_state, AddressInputMessage::BinChanged)
-                    .text_marks(&self.bin_text_marks)
-                    .tick_marks(&self.bin_tick_marks)
-                    .scalar(0.02)
-                    .style(BinaryKnobStyle),
+                Row::new()
+                    .spacing(50)
+                    .push(
+                        Knob::new(&mut self.bin_state, Message::Bin)
+                            .text_marks(&self.bin_text_marks)
+                            .tick_marks(&self.bin_tick_marks)
+                            .scalar(0.02)
+                            .style(BinaryKnobStyle),
+                    )
+                    .push(
+                        Knob::new(&mut self.octal_states.0, Message::Octal0)
+                            .text_marks(&self.octal_text_marks)
+                            .tick_marks(&self.octal_tick_marks)
+                            .scalar(0.015)
+                            .style(OctalKnobStyle),
+                    )
+                    .push(
+                        Knob::new(&mut self.octal_states.1, Message::Octal1)
+                            .text_marks(&self.octal_text_marks)
+                            .tick_marks(&self.octal_tick_marks)
+                            .scalar(0.015)
+                            .style(OctalKnobStyle),
+                    )
+                    .push(
+                        Knob::new(&mut self.octal_states.2, Message::Octal2)
+                            .text_marks(&self.octal_text_marks)
+                            .tick_marks(&self.octal_tick_marks)
+                            .scalar(0.015)
+                            .style(OctalKnobStyle),
+                    ),
             )
-            .push(
-                Knob::new(&mut self.octal_states.0, AddressInputMessage::Octal0Changed)
-                    .text_marks(&self.octal_text_marks)
-                    .tick_marks(&self.octal_tick_marks)
-                    .scalar(0.015)
-                    .style(OctalKnobStyle),
-            )
-            .push(
-                Knob::new(&mut self.octal_states.1, AddressInputMessage::Octal1Changed)
-                    .text_marks(&self.octal_text_marks)
-                    .tick_marks(&self.octal_tick_marks)
-                    .scalar(0.015)
-                    .style(OctalKnobStyle),
-            )
-            .push(
-                Knob::new(&mut self.octal_states.2, AddressInputMessage::Octal2Changed)
-                    .text_marks(&self.octal_text_marks)
-                    .tick_marks(&self.octal_tick_marks)
-                    .scalar(0.015)
-                    .style(OctalKnobStyle),
-            )
+            .push(Text::new(&self.title).size(16))
             .into()
-    }
-}
-
-impl Default for AddressInput {
-    fn default() -> Self {
-        Self::new()
     }
 }
