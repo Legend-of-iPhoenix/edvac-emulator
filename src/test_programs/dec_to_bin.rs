@@ -65,6 +65,7 @@ fn works() {
         0b0010_0010_0010_0010_0010_0010_0010_0010_0010_0010_0000,
     ));
 
+    computer.initiate();
     computer.continue_to_completion();
 
     assert_eq!(

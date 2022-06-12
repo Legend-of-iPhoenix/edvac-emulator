@@ -18,6 +18,8 @@ pub enum EdvacStatus {
 impl Default for EdvacStatus {
     fn default() -> Self {
         EdvacStatus::Running
+            resume_addr: 0o0000,
+        }
     }
 }
 
@@ -163,5 +165,18 @@ impl Edvac {
         while self.status == EdvacStatus::Running {
             self.step_once();
         }
+    }
+}
+
+/// # Buttons
+impl Edvac {
+    pub fn initiate(&mut self) {
+        if let EdvacStatus::Halted { resume_addr } = self.status {
+            self.state.initial_address_register = resume_addr;
+
+            self.status = EdvacStatus::Running;
+        }
+
+        // todo: the various operating modes that initiate can, well, initiate.
     }
 }

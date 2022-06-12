@@ -1,4 +1,4 @@
-use edvac::Edvac;
+use edvac::{Edvac, EdvacStatus};
 
 mod ui;
 
@@ -7,8 +7,11 @@ use ui::*;
 use ui::style::container::ContainerStyle;
 
 use iced::{
-    executor, Align, Application, Clipboard, Column, Command, Container, Element, Row, Settings,
+    executor, time, Align, Application, Clipboard, Column, Command, Container, Element, Row,
+    Settings, Subscription,
 };
+
+use std::time::{Duration, Instant};
 
 pub fn main() {
     App::run(Settings {
@@ -31,6 +34,8 @@ pub struct App {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    None,
+    Step(Instant),
     ExcessMagnitudeOptions(excess_magnitude_options::Message),
     AddressA(address_input::Message),
     AddressB(address_input::Message),
@@ -69,24 +74,44 @@ impl Application for App {
         _clipboard: &mut Clipboard,
     ) -> Command<Self::Message> {
         match message {
+            Message::None => Command::none(),
+            Message::Step(_) => {
+                self.computer.step_once();
+
+                Command::none()
+            }
             Message::ExcessMagnitudeOptions(m) => {
                 let (add, div) = self.excess_magnitude_options.update(m);
 
                 self.computer.state.excess_capacity_action_add = add;
                 self.computer.state.excess_capacity_action_div = div;
+
+                Command::none()
             }
             Message::AddressA(m) => {
                 self.computer.state.address_a_switches = self.address_a.update(m);
+
+                Command::none()
             }
             Message::AddressB(m) => {
                 self.computer.state.address_b_switches = self.address_b.update(m);
+
+                Command::none()
             }
             Message::SpecialOrder(m) => {
                 self.special_order.update(m);
+
+                Command::none()
             }
         }
+    }
 
-        Command::none()
+    fn subscription(&self) -> Subscription<Self::Message> {
+        if self.computer.status == EdvacStatus::Running {
+            time::every(Duration::from_millis(33)).map(Message::Step)
+        } else {
+            Subscription::none()
+        }
     }
 
     fn view(&mut self) -> Element<Self::Message> {

@@ -362,7 +362,7 @@ impl Edvac {
             OrderKind::DivExact => self.execute_div(addresses, true),
             OrderKind::Halt => self.execute_halt(addresses),
 
-            OrderKind::Unused => todo!(),
+            OrderKind::Unused => self.halt(addresses[3]),
         }
     }
 }
