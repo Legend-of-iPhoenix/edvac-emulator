@@ -6,7 +6,9 @@ use ui::*;
 
 use ui::style::container::ContainerStyle;
 
-use iced::{Align, Column, Container, Element, Row, Sandbox, Settings};
+use iced::{
+    executor, Align, Application, Clipboard, Column, Command, Container, Element, Row, Settings,
+};
 
 pub fn main() {
     App::run(Settings {
@@ -35,27 +37,37 @@ pub enum Message {
     SpecialOrder(special_order_input::Message),
 }
 
-impl Sandbox for App {
+impl Application for App {
     type Message = Message;
+    type Flags = ();
+    type Executor = executor::Default;
 
-    fn new() -> Self {
-        App {
-            computer: Edvac::default(),
+    fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
+        (
+            App {
+                computer: Edvac::default(),
 
-            excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions::default(),
+                excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions::default(
+                ),
 
-            address_a: address_input::AddressInput::new("ADDRESS A"),
-            address_b: address_input::AddressInput::new("ADDRESS B"),
+                address_a: address_input::AddressInput::new("ADDRESS A"),
+                address_b: address_input::AddressInput::new("ADDRESS B"),
 
-            special_order: special_order_input::SpecialOrderInput::default(),
-        }
+                special_order: special_order_input::SpecialOrderInput::default(),
+            },
+            Command::none(),
+        )
     }
 
     fn title(&self) -> String {
         "EDVAC Emulator".into()
     }
 
-    fn update(&mut self, message: Self::Message) {
+    fn update(
+        &mut self,
+        message: Self::Message,
+        _clipboard: &mut Clipboard,
+    ) -> Command<Self::Message> {
         match message {
             Message::ExcessMagnitudeOptions(m) => {
                 let (add, div) = self.excess_magnitude_options.update(m);
@@ -73,6 +85,8 @@ impl Sandbox for App {
                 self.special_order.update(m);
             }
         }
+
+        Command::none()
     }
 
     fn view(&mut self) -> Element<Self::Message> {
