@@ -4,7 +4,7 @@ mod ui;
 
 use ui::*;
 
-use iced::{Element, Row, Sandbox, Settings};
+use iced::{Column, Element, Row, Sandbox, Settings};
 
 pub fn main() {
     App::run(Settings {
@@ -19,12 +19,15 @@ pub struct App {
 
     address_a: address_input::AddressInput,
     address_b: address_input::AddressInput,
+
+    special_order: special_order_input::SpecialOrderInput,
 }
 
 #[derive(Debug, Clone)]
 pub enum Message {
     AddressA(address_input::Message),
     AddressB(address_input::Message),
+    SpecialOrder(special_order_input::Message),
 }
 
 impl Sandbox for App {
@@ -33,8 +36,11 @@ impl Sandbox for App {
     fn new() -> Self {
         App {
             computer: Edvac::default(),
+
             address_a: address_input::AddressInput::new("ADDRESS A"),
             address_b: address_input::AddressInput::new("ADDRESS B"),
+
+            special_order: special_order_input::SpecialOrderInput::new(),
         }
     }
 
@@ -50,13 +56,20 @@ impl Sandbox for App {
             Message::AddressB(m) => {
                 self.computer.state.address_b_switches = self.address_b.update(m);
             }
+            Message::SpecialOrder(m) => {
+                self.special_order.update(m);
+            }
         }
     }
 
     fn view(&mut self) -> Element<Self::Message> {
-        Row::new()
-            .push(self.address_a.view().map(Message::AddressA))
-            .push(self.address_b.view().map(Message::AddressB))
+        Column::new()
+            .push(
+                Row::new()
+                    .push(self.address_a.view().map(Message::AddressA))
+                    .push(self.address_b.view().map(Message::AddressB)),
+            )
+            .push(self.special_order.view().map(Message::SpecialOrder))
             .into()
     }
 }
