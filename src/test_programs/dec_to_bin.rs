@@ -1,6 +1,6 @@
 //! This program comes from <https://doi.org/10.2307/2002881>
 
-use crate::{word::Word, Edvac, EdvacStatus};
+use crate::{word::Word, Edvac};
 
 fn load(computer: &mut Edvac) {
     computer.high_speed_memory.load(vec![
@@ -65,9 +65,7 @@ fn works() {
         0b0010_0010_0010_0010_0010_0010_0010_0010_0010_0010_0000,
     ));
 
-    while let EdvacStatus::Running = computer.status {
-        computer.step_once();
-    }
+    computer.continue_to_completion();
 
     assert_eq!(
         computer.high_speed_memory.dump()[0o0001],

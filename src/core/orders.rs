@@ -365,23 +365,4 @@ impl Edvac {
             OrderKind::Unused => todo!(),
         }
     }
-
-    /// Decodes and executes the next order, appropriately updating the state of
-    /// the machine.
-    pub fn step_once(&mut self) {
-        println!("======= NEXT CYCLE =======");
-        let order: Order = self.get(self.state.initial_address_register).into();
-
-        println!(
-            "Ord@{:0>4o}:   {:?} {:0>4o} {:0>4o} {:0>4o} {:0>4o}",
-            self.state.initial_address_register,
-            order.kind,
-            order.addresses[0],
-            order.addresses[1],
-            order.addresses[2],
-            order.addresses[3]
-        );
-
-        self.execute_once(&order);
-    }
 }
