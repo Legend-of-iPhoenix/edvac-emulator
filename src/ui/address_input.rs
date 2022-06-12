@@ -80,7 +80,7 @@ impl AddressInput {
 
     pub fn view(&mut self) -> Element<Message> {
         Column::new()
-            .padding(50)
+            .padding(30)
             .spacing(10)
             .align_items(Align::Center)
             .push(

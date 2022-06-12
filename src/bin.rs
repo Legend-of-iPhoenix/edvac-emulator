@@ -4,7 +4,9 @@ mod ui;
 
 use ui::*;
 
-use iced::{Column, Element, Row, Sandbox, Settings};
+use ui::style::container::ContainerStyle;
+
+use iced::{Align, Column, Container, Element, Row, Sandbox, Settings};
 
 pub fn main() {
     App::run(Settings {
@@ -75,17 +77,32 @@ impl Sandbox for App {
 
     fn view(&mut self) -> Element<Self::Message> {
         Column::new()
+            .spacing(20)
+            .align_items(Align::Center)
             .push(
-                self.excess_magnitude_options
-                    .view()
-                    .map(Message::ExcessMagnitudeOptions),
+                Container::new(
+                    self.excess_magnitude_options
+                        .view()
+                        .map(Message::ExcessMagnitudeOptions),
+                )
+                .style(ContainerStyle),
             )
             .push(
                 Row::new()
-                    .push(self.address_a.view().map(Message::AddressA))
-                    .push(self.address_b.view().map(Message::AddressB)),
+                    .spacing(20)
+                    .push(
+                        Container::new(self.address_a.view().map(Message::AddressA))
+                            .style(ContainerStyle),
+                    )
+                    .push(
+                        Container::new(self.address_b.view().map(Message::AddressB))
+                            .style(ContainerStyle),
+                    ),
             )
-            .push(self.special_order.view().map(Message::SpecialOrder))
+            .push(
+                Container::new(self.special_order.view().map(Message::SpecialOrder))
+                    .style(ContainerStyle),
+            )
             .into()
     }
 }

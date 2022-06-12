@@ -51,6 +51,7 @@ impl SpecialOrderInput {
             .push(
                 Column::new().push(Text::new("")).push(
                     Text::new("SPECIAL\nORDER")
+                        .size(16)
                         .horizontal_alignment(HorizontalAlignment::Center)
                         .vertical_alignment(VerticalAlignment::Center),
                 ),

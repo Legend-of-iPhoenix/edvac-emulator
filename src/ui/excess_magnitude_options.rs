@@ -59,7 +59,7 @@ impl ExcessMagnitudeOptions {
 
     pub fn view(&mut self) -> Element<Message> {
         Row::new()
-            .padding(50)
+            .padding(30)
             .spacing(30)
             .push(
                 Column::new()
