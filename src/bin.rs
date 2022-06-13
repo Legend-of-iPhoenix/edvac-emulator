@@ -7,8 +7,8 @@ use ui::*;
 use ui::style::container::ContainerStyle;
 
 use iced::{
-    executor, time, Align, Application, Button, Clipboard, Column, Command, Container, Element,
-    Row, Settings, Subscription,
+    executor, time, Align, Application, Clipboard, Column, Command, Container, Element, Row,
+    Settings, Subscription,
 };
 
 use std::time::{Duration, Instant};
