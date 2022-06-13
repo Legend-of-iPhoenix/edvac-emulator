@@ -17,7 +17,7 @@ pub enum EdvacStatus {
 
 impl Default for EdvacStatus {
     fn default() -> Self {
-        EdvacStatus::Running
+        EdvacStatus::Halted {
             resume_addr: 0o0000,
         }
     }
@@ -152,6 +152,10 @@ impl Edvac {
 
     /// Executes until the Initial Address Register equals Address A (breakpoint
     /// mode).
+    ///
+    /// Note that this method is provided mostly for completeness; when packaged
+    /// as a binary, the UI handles this operating mode. This way, we don't need
+    /// to bother with async stuff.
     pub fn continue_to_address_a(&mut self) {
         while self.status == EdvacStatus::Running
             && self.state.initial_address_register != self.state.address_a_switches
@@ -161,6 +165,10 @@ impl Edvac {
     }
 
     /// Executes until the machine Halts.
+    ///
+    /// Note that this method is provided mostly for completeness; when packaged
+    /// as a binary, the UI handles this operating mode. This way, we don't need
+    /// to bother with async stuff.
     pub fn continue_to_completion(&mut self) {
         while self.status == EdvacStatus::Running {
             self.step_once();
@@ -170,7 +178,7 @@ impl Edvac {
 
 /// # Buttons
 impl Edvac {
-    pub fn initiate(&mut self) {
+    pub fn initiate_pressed(&mut self) {
         if let EdvacStatus::Halted { resume_addr } = self.status {
             self.state.initial_address_register = resume_addr;
 
@@ -178,5 +186,11 @@ impl Edvac {
         }
 
         // todo: the various operating modes that initiate can, well, initiate.
+    }
+
+    pub fn halt_pressed(&mut self) {
+        self.status = EdvacStatus::Halted {
+            resume_addr: self.state.initial_address_register,
+        };
     }
 }

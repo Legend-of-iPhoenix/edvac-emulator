@@ -7,8 +7,8 @@ use ui::*;
 use ui::style::container::ContainerStyle;
 
 use iced::{
-    executor, time, Align, Application, Clipboard, Column, Command, Container, Element, Row,
-    Settings, Subscription,
+    executor, time, Align, Application, Button, Clipboard, Column, Command, Container, Element,
+    Row, Settings, Subscription,
 };
 
 use std::time::{Duration, Instant};
@@ -24,6 +24,8 @@ pub fn main() {
 pub struct App {
     computer: Edvac,
 
+    operation_buttons: button_panels::OperationButtons,
+
     excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions,
 
     address_a: address_input::AddressInput,
@@ -34,8 +36,8 @@ pub struct App {
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    None,
     Step(Instant),
+    ButtonPressed(button_panels::Message),
     ExcessMagnitudeOptions(excess_magnitude_options::Message),
     AddressA(address_input::Message),
     AddressB(address_input::Message),
@@ -51,6 +53,8 @@ impl Application for App {
         (
             App {
                 computer: Edvac::default(),
+
+                operation_buttons: button_panels::OperationButtons::default(),
 
                 excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions::default(
                 ),
@@ -74,36 +78,33 @@ impl Application for App {
         _clipboard: &mut Clipboard,
     ) -> Command<Self::Message> {
         match message {
-            Message::None => Command::none(),
             Message::Step(_) => {
                 self.computer.step_once();
-
-                Command::none()
             }
+            Message::ButtonPressed(m) => match m {
+                button_panels::Message::Initiate => self.computer.initiate_pressed(),
+                button_panels::Message::Halt => self.computer.halt_pressed(),
+
+                _ => {} // unimplemented
+            },
             Message::ExcessMagnitudeOptions(m) => {
                 let (add, div) = self.excess_magnitude_options.update(m);
 
                 self.computer.state.excess_capacity_action_add = add;
                 self.computer.state.excess_capacity_action_div = div;
-
-                Command::none()
             }
             Message::AddressA(m) => {
                 self.computer.state.address_a_switches = self.address_a.update(m);
-
-                Command::none()
             }
             Message::AddressB(m) => {
                 self.computer.state.address_b_switches = self.address_b.update(m);
-
-                Command::none()
             }
             Message::SpecialOrder(m) => {
                 self.special_order.update(m);
-
-                Command::none()
             }
-        }
+        };
+
+        Command::none()
     }
 
     fn subscription(&self) -> Subscription<Self::Message> {
@@ -118,6 +119,12 @@ impl Application for App {
         Column::new()
             .spacing(20)
             .align_items(Align::Center)
+            .push(
+                Row::new().push(
+                    Container::new(self.operation_buttons.view().map(Message::ButtonPressed))
+                        .style(ContainerStyle),
+                ),
+            )
             .push(
                 Container::new(
                     self.excess_magnitude_options
