@@ -86,6 +86,38 @@ impl knob::StyleSheet for OctalKnobStyle {
     }
 }
 
+pub struct OrderTypeKnobStyle;
+impl knob::StyleSheet for OrderTypeKnobStyle {
+    fn active(&self) -> knob::Style {
+        STYLE
+    }
+
+    fn hovered(&self) -> knob::Style {
+        STYLE
+    }
+
+    fn dragging(&self) -> knob::Style {
+        STYLE
+    }
+
+    fn text_marks_style(&self) -> Option<knob::TextMarksStyle> {
+        Some(knob::TextMarksStyle::default())
+    }
+
+    fn tick_marks_style(&self) -> Option<knob::TickMarksStyle> {
+        Some(knob::TickMarksStyle {
+            style: tick_marks::Style {
+                tier_2: tick_marks::Shape::Circle {
+                    diameter: 2.0,
+                    color: Color::from_rgb(0.5, 0.5, 0.5),
+                },
+                ..Default::default()
+            },
+            offset: 5.0,
+        })
+    }
+}
+
 pub struct ExcessMagnitudeKnobStyle;
 impl knob::StyleSheet for ExcessMagnitudeKnobStyle {
     fn active(&self) -> knob::Style {
