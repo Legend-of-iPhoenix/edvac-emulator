@@ -61,6 +61,33 @@ impl Wire {
             self.bits.set(self.index + i, bit);
         }
     }
+
+    pub fn write_address(&mut self, address: usize) {
+        let mut bits = address as u64;
+
+        for i in 0..=ADDRESS_WIDTH {
+            let bit = (bits & 0b1) == 0b1;
+            bits >>= 1;
+            self.bits.set(self.index + i, bit);
+        }
+    }
+
+    pub fn with_program(listing: Vec<(usize, Word)>) -> Wire {
+        let mut wire = Wire::default();
+
+        for (address, word) in listing {
+            wire.write_address(address);
+            wire.index += ADDRESS_WIDTH;
+            wire.write_word(word);
+            wire.index += BIT_WIDTH;
+        }
+
+        wire.index = 0;
+
+        //panic!("{:?}", wire.bits.split_at(54 * 0o1042).0);
+
+        wire
+    }
 }
 
 impl Default for Wire {

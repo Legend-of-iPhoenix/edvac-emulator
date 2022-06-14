@@ -25,19 +25,39 @@ pub enum OrderKind {
 
 impl OrderKind {
     #[must_use]
-    pub fn from_mneumonic(mneumonic: &str) -> Self {
+    pub fn from_mneumonic(mneumonic: &str) -> Option<Self> {
         match mneumonic {
-            "C" => Self::Compare,
-            "MR" => Self::ManualRead,
-            "A" => Self::Add,
-            "W" => Self::Wire,
-            "S" => Self::Sub,
-            "M" => Self::Mul,
-            "m" => Self::MulExact,
-            "D" => Self::Div,
-            "d" => Self::DivExact,
-            "H" => Self::Halt,
-            _ => panic!(),
+            "C" => Some(Self::Compare),
+            "MR" => Some(Self::ManualRead),
+            "A" => Some(Self::Add),
+            "W" => Some(Self::Wire),
+            "S" => Some(Self::Sub),
+            "E" => Some(Self::Extract),
+            "M" => Some(Self::Mul),
+            "m" => Some(Self::MulExact),
+            "D" => Some(Self::Div),
+            "d" => Some(Self::DivExact),
+            "H" => Some(Self::Halt),
+            _ => None,
+        }
+    }
+
+    #[must_use]
+    pub fn to_bits(self) -> u64 {
+        // Opposite of the From<Word> operation below, see comments there.
+        match self {
+            OrderKind::Compare => 0b0010,
+            OrderKind::ManualRead => 0b0011,
+            OrderKind::Add => 0b0100,
+            OrderKind::Wire => 0b0101,
+            OrderKind::Sub => 0b0110,
+            OrderKind::Extract => 0b0111,
+            OrderKind::Mul => 0b1000,
+            OrderKind::MulExact => 0b1001,
+            OrderKind::Div => 0b1010,
+            OrderKind::DivExact => 0b1011,
+            OrderKind::Halt => 0b1100,
+            OrderKind::Unused => 0b0000,
         }
     }
 }
