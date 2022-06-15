@@ -5,6 +5,7 @@ mod ui;
 use ui::*;
 
 use ui::style::container::ContainerStyle;
+use ui::threading::{EdvacMessage, StateParameter};
 
 use iced::{
     executor, time, Align, Application, Clipboard, Column, Command, Container, Element, Row,
@@ -22,7 +23,7 @@ pub fn main() {
 }
 
 pub struct App {
-    computer: Edvac,
+    computer: threading::EdvacThread,
 
     operation_buttons: button_panels::OperationButtons,
 
@@ -38,7 +39,6 @@ pub struct App {
 
 #[derive(Debug, Clone)]
 pub enum Message {
-    Step(Instant),
     ButtonPressed(button_panels::Message),
     ExcessMagnitudeOptions(excess_magnitude_options::Message),
     AddressA(address_input::Message),
@@ -55,7 +55,7 @@ impl Application for App {
     fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
         (
             App {
-                computer: Edvac::default(),
+                computer: threading::EdvacThread::default(),
 
                 operation_buttons: button_panels::OperationButtons::default(),
 
@@ -83,46 +83,46 @@ impl Application for App {
         _clipboard: &mut Clipboard,
     ) -> Command<Self::Message> {
         match message {
-            Message::Step(_) => {
-                self.computer.step_once();
-            }
             Message::ButtonPressed(m) => match m {
-                button_panels::Message::Initiate => self.computer.initiate_pressed(),
-                button_panels::Message::Halt => self.computer.halt_pressed(),
+                button_panels::Message::Initiate => {
+                    self.computer.send(EdvacMessage::Initiate);
+                }
+                button_panels::Message::Halt => {
+                    self.computer.send(EdvacMessage::Halt);
+                }
 
                 _ => {} // unimplemented
             },
             Message::ExcessMagnitudeOptions(m) => {
                 let (add, div) = self.excess_magnitude_options.update(m);
 
-                self.computer.state.excess_capacity_action_add = add;
-                self.computer.state.excess_capacity_action_div = div;
+                self.computer.send(EdvacMessage::ModifyState(
+                    StateParameter::ExcessCapacityActions { add, div },
+                ));
             }
             Message::AddressA(m) => {
-                self.computer.state.address_a_switches = self.address_a.update(m);
+                self.computer
+                    .send(EdvacMessage::ModifyState(StateParameter::AddressA(
+                        self.address_a.update(m),
+                    )));
             }
             Message::AddressB(m) => {
-                self.computer.state.address_b_switches = self.address_b.update(m);
+                self.computer
+                    .send(EdvacMessage::ModifyState(StateParameter::AddressB(
+                        self.address_b.update(m),
+                    )));
             }
             Message::SpecialOrder(m) => {
                 self.special_order.update(m);
             }
             Message::ProgramLoad(m) => {
-                if let Some((id, wire)) = self.program_loader.update(m) {
-                    self.computer.low_speed_memory[id] = wire;
+                if let Some((spool, wire)) = self.program_loader.update(m) {
+                    self.computer.send(EdvacMessage::LoadWire(spool, wire));
                 }
             }
         };
 
         Command::none()
-    }
-
-    fn subscription(&self) -> Subscription<Self::Message> {
-        if self.computer.status == EdvacStatus::Running {
-            time::every(Duration::from_millis(33)).map(Message::Step)
-        } else {
-            Subscription::none()
-        }
     }
 
     fn view(&mut self) -> Element<Self::Message> {

@@ -34,7 +34,7 @@ impl ProgramLoader {
         }
     }
 
-    pub fn update(&mut self, message: Message) -> Option<(usize, Wire)> {
+    pub fn update(&mut self, message: Message) -> Option<(WireSpool, Wire)> {
         match message {
             Message::Clicked => {
                 let selection = FileDialog::new()
@@ -46,7 +46,7 @@ impl ProgramLoader {
                         if let Some(wire) = assemble(&listing) {
                             self.state = State::Ok;
 
-                            return Some((self.wire.try_into().unwrap(), wire));
+                            return Some((self.wire, wire));
                         } else {
                             self.state = State::Error("Unable to assemble file.".into());
                         }
