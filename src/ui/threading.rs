@@ -8,7 +8,7 @@ use edvac::{
     EdvacStatus,
 };
 
-use crate::Edvac;
+use edvac::Edvac;
 
 mod bidi_channel {
     use std::sync::mpsc::{channel, Receiver, RecvError, SendError, Sender, TryRecvError};
@@ -48,6 +48,7 @@ pub enum StateParameter {
         add: ExcessCapacityAction,
         div: ExcessCapacityAction,
     },
+
     SpecialOrder(Word),
 
     AddressA(usize),

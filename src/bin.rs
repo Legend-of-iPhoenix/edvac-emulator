@@ -1,5 +1,3 @@
-use edvac::{Edvac, EdvacStatus};
-
 mod ui;
 
 use ui::*;
@@ -7,12 +5,7 @@ use ui::*;
 use ui::style::container::ContainerStyle;
 use ui::threading::{EdvacMessage, StateParameter};
 
-use iced::{
-    executor, time, Align, Application, Clipboard, Column, Command, Container, Element, Row,
-    Settings, Subscription,
-};
-
-use std::time::{Duration, Instant};
+use iced::{Align, Column, Container, Element, Row, Sandbox, Settings};
 
 pub fn main() {
     App::run(Settings {
@@ -47,41 +40,31 @@ pub enum Message {
     ProgramLoad(program_loader::Message),
 }
 
-impl Application for App {
+impl Sandbox for App {
     type Message = Message;
-    type Flags = ();
-    type Executor = executor::Default;
 
-    fn new(_flags: Self::Flags) -> (Self, Command<Self::Message>) {
-        (
-            App {
-                computer: threading::EdvacThread::default(),
+    fn new() -> Self {
+        App {
+            computer: threading::EdvacThread::default(),
 
-                operation_buttons: button_panels::OperationButtons::default(),
+            operation_buttons: button_panels::OperationButtons::default(),
 
-                excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions::default(
-                ),
+            excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions::default(),
 
-                address_a: address_input::AddressInput::new("ADDRESS A"),
-                address_b: address_input::AddressInput::new("ADDRESS B"),
+            address_a: address_input::AddressInput::new("ADDRESS A"),
+            address_b: address_input::AddressInput::new("ADDRESS B"),
 
-                special_order: special_order_input::SpecialOrderInput::default(),
+            special_order: special_order_input::SpecialOrderInput::default(),
 
-                program_loader: program_loader::ProgramLoader::default(),
-            },
-            Command::none(),
-        )
+            program_loader: program_loader::ProgramLoader::default(),
+        }
     }
 
     fn title(&self) -> String {
         "EDVAC Emulator".into()
     }
 
-    fn update(
-        &mut self,
-        message: Self::Message,
-        _clipboard: &mut Clipboard,
-    ) -> Command<Self::Message> {
+    fn update(&mut self, message: Self::Message) {
         match message {
             Message::ButtonPressed(m) => match m {
                 button_panels::Message::Initiate => {
@@ -121,8 +104,6 @@ impl Application for App {
                 }
             }
         };
-
-        Command::none()
     }
 
     fn view(&mut self) -> Element<Self::Message> {

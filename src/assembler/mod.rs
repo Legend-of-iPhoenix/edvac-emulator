@@ -45,7 +45,7 @@ pub fn assemble(listing: &str) -> Option<Wire> {
             }
 
             let next = split.next()?;
-            if ['+', '-'].contains(&next.chars().nth(0)?) {
+            if ['+', '-'].contains(&next.chars().next()?) {
                 let (sign, first) = next.split_at(1);
 
                 let mut raw = u64::from_str_radix(first, 8).ok()?;
