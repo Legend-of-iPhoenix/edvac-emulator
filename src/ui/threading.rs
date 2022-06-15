@@ -2,7 +2,7 @@
 use std::thread;
 
 use edvac::{
-    operating_console::ExcessCapacityAction,
+    operating_console::{ExcessCapacityAction, OperatingMode},
     wire::{Wire, WireSpool},
     word::Word,
     EdvacStatus,
@@ -107,7 +107,23 @@ impl EdvacThread {
                         Err(_) => todo!(),
                     };
 
-                    computer.step_once();
+                    match computer.state.operating_mode {
+                        OperatingMode::SpecialOneOrder => computer.execute_special_order(),
+                        OperatingMode::NormalToCompletion => computer.step_once(),
+                        OperatingMode::NormalToAddressA => {
+                            if computer.state.initial_address_register
+                                == computer.state.address_a_switches
+                            {
+                                computer.halt_pressed();
+                            } else {
+                                computer.step_once();
+                            }
+                        }
+                        OperatingMode::NormalOneOrder => {
+                            computer.step_once();
+                            computer.halt_pressed();
+                        }
+                    }
                 } else {
                     match core_link.recv() {
                         Ok(message) => handle_message(&mut computer, message),

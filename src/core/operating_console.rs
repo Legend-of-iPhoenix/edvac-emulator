@@ -1,5 +1,24 @@
 use crate::word::Word;
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum OperatingMode {
+    // SpecialOneCycle,
+    // SpecialOneExecute,
+    SpecialOneOrder,
+
+    NormalToCompletion,
+    NormalToAddressA,
+    // NormalOneCycle,
+    // NormalOneExecute,
+    NormalOneOrder,
+}
+
+impl Default for OperatingMode {
+    fn default() -> Self {
+        Self::NormalToCompletion
+    }
+}
+
 // Origins+Fate pg. 34
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum MemoryMode {
@@ -37,6 +56,8 @@ impl Default for ExcessCapacityAction {
 
 pub struct State {
     pub initial_address_register: usize,
+    pub operating_mode: OperatingMode,
+
     pub excess_capacity_action_add: ExcessCapacityAction,
     pub excess_capacity_action_div: ExcessCapacityAction,
     pub memory_mode: MemoryMode,
@@ -52,6 +73,8 @@ impl Default for State {
     fn default() -> Self {
         State {
             initial_address_register: 0,
+            operating_mode: Default::default(),
+
             excess_capacity_action_add: Default::default(),
             excess_capacity_action_div: Default::default(),
 
