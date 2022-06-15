@@ -1,3 +1,5 @@
+use edvac::orders::OrderKind;
+use edvac::word::Word;
 use iced_audio::{knob, text_marks, tick_marks, IntRange, Knob, Normal};
 
 use iced::{Align, Column, Element, HorizontalAlignment, Row, Text, VerticalAlignment};
@@ -5,13 +7,18 @@ use iced::{Align, Column, Element, HorizontalAlignment, Row, Text, VerticalAlign
 use super::address_input;
 use super::style::knob::OrderTypeKnobStyle;
 
+/// In the same order as shown on the dial.
+const ORDER_KINDS: [&str; 11] = ["A", "S", "M", "D", "m", "d", "C", "E", "MR", "W", "H"];
+
 pub struct SpecialOrderInput {
     range: IntRange,
     tick_marks: tick_marks::Group,
     text_marks: text_marks::Group,
     order_type_state: knob::State,
+    selected_order_kind: OrderKind,
 
     addresses: [address_input::AddressInput; 4],
+    values: [u64; 4],
 }
 
 #[derive(Debug, Clone)]
@@ -26,10 +33,9 @@ impl SpecialOrderInput {
         SpecialOrderInput {
             range,
             tick_marks: tick_marks::Group::evenly_spaced(11, tick_marks::Tier::Two),
-            text_marks: text_marks::Group::evenly_spaced(&[
-                "A", "S", "M", "D", "m", "d", "C", "E", "MR", "W", "H",
-            ]),
+            text_marks: text_marks::Group::evenly_spaced(&ORDER_KINDS),
             order_type_state: knob::State::new(range.default_normal_param()),
+            selected_order_kind: OrderKind::Add,
 
             addresses: [
                 address_input::AddressInput::new("ADDRESS 1"),
@@ -37,16 +43,32 @@ impl SpecialOrderInput {
                 address_input::AddressInput::new("ADDRESS 2"),
                 address_input::AddressInput::new("ADDRESS 4"),
             ],
+            values: [0; 4],
         }
     }
 
-    pub fn update(&mut self, message: Message) {
+    pub fn update(&mut self, message: Message) -> Word {
         match message {
-            Message::OrderType(_) => self.order_type_state.snap_visible_to(&self.range),
+            Message::OrderType(_) => {
+                self.order_type_state.snap_visible_to(&self.range);
+
+                self.selected_order_kind = OrderKind::from_mneumonic(
+                    ORDER_KINDS[self.order_type_state.normal().scale(10.0) as usize],
+                )
+                .unwrap();
+            }
             Message::Address(id, m) => {
-                self.addresses[id].update(m);
+                self.values[id] = self.addresses[id].update(m) as u64;
             }
         };
+
+        Word::from_bits(
+            self.values[0] << 34
+                | self.values[1] << 24
+                | self.values[2] << 14
+                | self.values[3] << 4
+                | self.selected_order_kind.to_bits(),
+        )
     }
 
     pub fn view(&mut self) -> Element<Message> {

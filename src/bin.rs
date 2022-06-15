@@ -96,7 +96,10 @@ impl Sandbox for App {
                     )));
             }
             Message::SpecialOrder(m) => {
-                self.special_order.update(m);
+                self.computer
+                    .send(EdvacMessage::ModifyState(StateParameter::SpecialOrder(
+                        self.special_order.update(m),
+                    )));
             }
             Message::ProgramLoad(m) => {
                 if let Some((spool, wire)) = self.program_loader.update(m) {
