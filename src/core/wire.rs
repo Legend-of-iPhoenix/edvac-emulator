@@ -7,6 +7,50 @@ use crate::{
 
 const WIRE_SIZE: usize = 50000 * BIT_WIDTH;
 
+#[derive(Eq, PartialEq, Debug, Clone, Copy)]
+pub enum WireSpool {
+    Zero,
+    One,
+    Two,
+    Three,
+}
+
+impl TryFrom<WireSpool> for usize {
+    type Error = ();
+
+    /// Converts a WireSpool into its *zero-indexed id* or "Err" is spool is
+    /// WireSpool::Zero.
+    fn try_from(value: WireSpool) -> Result<Self, Self::Error> {
+        match value {
+            WireSpool::Zero => Err(()), // not a spool but a mode of operation
+            WireSpool::One => Ok(0),
+            WireSpool::Two => Ok(1),
+            WireSpool::Three => Ok(2),
+        }
+    }
+}
+
+impl TryFrom<u64> for WireSpool {
+    type Error = ();
+
+    /// Note that this is not the inverse of the above TryFrom into `usize`.
+    fn try_from(value: u64) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(WireSpool::Zero),
+            1 => Ok(WireSpool::One),
+            2 => Ok(WireSpool::Two),
+            3 => Ok(WireSpool::Three),
+            _ => Err(()),
+        }
+    }
+}
+
+impl From<WireSpool> for String {
+    fn from(wire: WireSpool) -> Self {
+        format!("{:?}", wire)
+    }
+}
+
 #[derive(Copy, Clone)]
 pub enum WireShift {
     Forward(usize),

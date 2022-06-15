@@ -202,16 +202,18 @@ impl Edvac {
 
         // According to page "6-4" wire #0 is not a wire but a mode of operation
         // uses the special input switches on the operator console
-        let wire_spool = sub_order & 0b11;
+        let spool_id = sub_order & 0b11;
 
-        if wire_spool == 0 && operation == 0o3 {
+        if spool_id == 0 && operation == 0o3 {
             operation = 0o2;
         }
 
-        if backward && operation == 0o3 || wire_spool == 0 && operation == 0o0 {
+        if backward && operation == 0o3 || spool_id == 0 && operation == 0o0 {
             self.halt(next_addr);
             return;
         }
+
+        let wire_spool = (spool_id as u64).try_into().unwrap();
 
         // FuncDesc Diagram 104-4LC-3 "Wire Order Selector"
         let mut mem_index = start;

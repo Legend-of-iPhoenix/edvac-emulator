@@ -3,10 +3,13 @@ use std::fs;
 use iced::{button, Button, Column, Element, Radio, Row, Text};
 use rfd::FileDialog;
 
-use edvac::{assembler::assemble, wire::Wire};
+use edvac::{
+    assembler::assemble,
+    wire::{Wire, WireSpool},
+};
 pub struct ProgramLoader {
     button: button::State,
-    wire: WireNumber,
+    wire: WireSpool,
 
     state: State,
 }
@@ -16,40 +19,17 @@ enum State {
     Ok,
 }
 
-#[derive(Eq, PartialEq, Debug, Clone, Copy)]
-pub enum WireNumber {
-    One,
-    Two,
-    Three,
-}
-
-impl From<WireNumber> for usize {
-    fn from(num: WireNumber) -> Self {
-        match num {
-            WireNumber::One => 0,
-            WireNumber::Two => 1,
-            WireNumber::Three => 2,
-        }
-    }
-}
-
-impl From<WireNumber> for String {
-    fn from(wire: WireNumber) -> Self {
-        format!("Wire {}", usize::from(wire) + 1)
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum Message {
     Clicked,
-    WireSelected(WireNumber),
+    WireSelected(WireSpool),
 }
 
 impl ProgramLoader {
     pub fn new() -> ProgramLoader {
         ProgramLoader {
             button: button::State::default(),
-            wire: WireNumber::One,
+            wire: WireSpool::One,
             state: State::Ok,
         }
     }
@@ -66,7 +46,7 @@ impl ProgramLoader {
                         if let Some(wire) = assemble(&listing) {
                             self.state = State::Ok;
 
-                            return Some((self.wire.into(), wire));
+                            return Some((self.wire.try_into().unwrap(), wire));
                         } else {
                             self.state = State::Error("Unable to assemble file.".into());
                         }
@@ -98,7 +78,7 @@ impl ProgramLoader {
                 .on_press(Message::Clicked),
             )
             .push(
-                [WireNumber::One, WireNumber::Two, WireNumber::Three]
+                [WireSpool::One, WireSpool::Two, WireSpool::Three]
                     .iter()
                     .fold(Column::new(), |column, &variant| {
                         column.push(Radio::new(
