@@ -32,6 +32,8 @@ pub struct App {
     address_b: address_input::AddressInput,
 
     special_order: special_order_input::SpecialOrderInput,
+
+    program_loader: program_loader::ProgramLoader,
 }
 
 #[derive(Debug, Clone)]
@@ -42,6 +44,7 @@ pub enum Message {
     AddressA(address_input::Message),
     AddressB(address_input::Message),
     SpecialOrder(special_order_input::Message),
+    ProgramLoad(program_loader::Message),
 }
 
 impl Application for App {
@@ -63,6 +66,8 @@ impl Application for App {
                 address_b: address_input::AddressInput::new("ADDRESS B"),
 
                 special_order: special_order_input::SpecialOrderInput::default(),
+
+                program_loader: program_loader::ProgramLoader::default(),
             },
             Command::none(),
         )
@@ -102,6 +107,11 @@ impl Application for App {
             Message::SpecialOrder(m) => {
                 self.special_order.update(m);
             }
+            Message::ProgramLoad(m) => {
+                if let Some((id, wire)) = self.program_loader.update(m) {
+                    self.computer.low_speed_memory[id] = wire;
+                }
+            }
         };
 
         Command::none()
@@ -116,38 +126,48 @@ impl Application for App {
     }
 
     fn view(&mut self) -> Element<Self::Message> {
-        Column::new()
-            .spacing(20)
-            .align_items(Align::Center)
+        Row::new()
             .push(
-                Row::new().push(
-                    Container::new(self.operation_buttons.view().map(Message::ButtonPressed))
-                        .style(ContainerStyle),
-                ),
-            )
-            .push(
-                Container::new(
-                    self.excess_magnitude_options
-                        .view()
-                        .map(Message::ExcessMagnitudeOptions),
-                )
-                .style(ContainerStyle),
-            )
-            .push(
-                Row::new()
+                Column::new()
                     .spacing(20)
+                    .align_items(Align::Center)
                     .push(
-                        Container::new(self.address_a.view().map(Message::AddressA))
+                        Row::new().push(
+                            Container::new(
+                                self.operation_buttons.view().map(Message::ButtonPressed),
+                            )
                             .style(ContainerStyle),
+                        ),
                     )
                     .push(
-                        Container::new(self.address_b.view().map(Message::AddressB))
+                        Container::new(
+                            self.excess_magnitude_options
+                                .view()
+                                .map(Message::ExcessMagnitudeOptions),
+                        )
+                        .style(ContainerStyle),
+                    )
+                    .push(
+                        Row::new()
+                            .spacing(20)
+                            .push(
+                                Container::new(self.address_a.view().map(Message::AddressA))
+                                    .style(ContainerStyle),
+                            )
+                            .push(
+                                Container::new(self.address_b.view().map(Message::AddressB))
+                                    .style(ContainerStyle),
+                            ),
+                    )
+                    .push(
+                        Container::new(self.special_order.view().map(Message::SpecialOrder))
                             .style(ContainerStyle),
                     ),
             )
             .push(
-                Container::new(self.special_order.view().map(Message::SpecialOrder))
-                    .style(ContainerStyle),
+                Column::new()
+                    .spacing(20)
+                    .push(self.program_loader.view().map(Message::ProgramLoad)),
             )
             .into()
     }

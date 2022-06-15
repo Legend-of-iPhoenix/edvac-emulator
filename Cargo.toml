@@ -10,6 +10,7 @@ bitvec = "1.0.0"
 iced = { version = "0.3", features = ["smol"] }
 # while this is a non-audio project, there are really nice knobs in iced_audio
 iced_audio = "0.7"
+rfd = "0.8.4"
 
 [[bin]]
 name = "edvac-emulator"
