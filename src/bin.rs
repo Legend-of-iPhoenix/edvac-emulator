@@ -18,6 +18,8 @@ pub fn main() {
 pub struct App {
     computer: threading::EdvacThread,
 
+    operating_mode: operating_mode_input::OperatingModeInput,
+
     operation_buttons: button_panels::OperationButtons,
 
     excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions,
@@ -32,6 +34,7 @@ pub struct App {
 
 #[derive(Debug, Clone)]
 pub enum Message {
+    OperatingMode(operating_mode_input::Message),
     ButtonPressed(button_panels::Message),
     ExcessMagnitudeOptions(excess_magnitude_options::Message),
     AddressA(address_input::Message),
@@ -46,6 +49,8 @@ impl Sandbox for App {
     fn new() -> Self {
         App {
             computer: threading::EdvacThread::default(),
+
+            operating_mode: operating_mode_input::OperatingModeInput::default(),
 
             operation_buttons: button_panels::OperationButtons::default(),
 
@@ -66,6 +71,12 @@ impl Sandbox for App {
 
     fn update(&mut self, message: Self::Message) {
         match message {
+            Message::OperatingMode(m) => {
+                self.computer
+                    .send(EdvacMessage::ModifyState(StateParameter::OperatingMode(
+                        self.operating_mode.update(m),
+                    )));
+            }
             Message::ButtonPressed(m) => match m {
                 button_panels::Message::Initiate => {
                     self.computer.send(EdvacMessage::Initiate);
@@ -115,6 +126,11 @@ impl Sandbox for App {
                 Column::new()
                     .spacing(20)
                     .align_items(Align::Center)
+                    .push(
+                        Container::new(self.operating_mode.view().map(Message::OperatingMode))
+                            .style(ContainerStyle)
+                            .padding(20),
+                    )
                     .push(
                         Row::new().push(
                             Container::new(

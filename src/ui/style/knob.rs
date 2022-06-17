@@ -161,3 +161,47 @@ impl knob::StyleSheet for ExcessMagnitudeKnobStyle {
         })
     }
 }
+
+pub struct OperatingModeKnobStyle;
+impl knob::StyleSheet for OperatingModeKnobStyle {
+    fn active(&self) -> knob::Style {
+        STYLE
+    }
+
+    fn hovered(&self) -> knob::Style {
+        STYLE
+    }
+
+    fn dragging(&self) -> knob::Style {
+        STYLE
+    }
+
+    fn angle_range(&self) -> KnobAngleRange {
+        KnobAngleRange::from_deg(180.0 - 240.0 / 4.0, 180.0 + 240.0 / 4.0)
+    }
+
+    fn text_marks_style(&self) -> Option<knob::TextMarksStyle> {
+        Some(knob::TextMarksStyle {
+            style: text_marks::Style {
+                text_size: 8,
+                bounds_width: 48,
+                ..Default::default()
+            },
+            h_char_offset: 1.5,
+            ..Default::default()
+        })
+    }
+
+    fn tick_marks_style(&self) -> Option<knob::TickMarksStyle> {
+        Some(knob::TickMarksStyle {
+            style: tick_marks::Style {
+                tier_2: tick_marks::Shape::Circle {
+                    diameter: 2.0,
+                    color: Color::from_rgb(0.5, 0.5, 0.5),
+                },
+                ..Default::default()
+            },
+            offset: 5.0,
+        })
+    }
+}

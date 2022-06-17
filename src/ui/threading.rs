@@ -44,6 +44,8 @@ mod bidi_channel {
 }
 
 pub enum StateParameter {
+    OperatingMode(OperatingMode),
+
     ExcessCapacityActions {
         add: ExcessCapacityAction,
         div: ExcessCapacityAction,
@@ -80,6 +82,9 @@ impl EdvacThread {
                     EdvacMessage::Initiate => computer.initiate_pressed(),
                     EdvacMessage::Halt => computer.halt_pressed(),
                     EdvacMessage::ModifyState(parameter) => match parameter {
+                        StateParameter::OperatingMode(mode) => {
+                            computer.state.operating_mode = mode;
+                        }
                         StateParameter::ExcessCapacityActions { add, div } => {
                             computer.state.excess_capacity_action_add = add;
                             computer.state.excess_capacity_action_div = div;
@@ -138,7 +143,7 @@ impl EdvacThread {
     }
 
     pub fn send(&mut self, message: EdvacMessage) {
-        self.channel.send(message);
+        self.channel.send(message).ok().unwrap();
     }
 }
 
