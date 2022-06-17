@@ -64,8 +64,8 @@ impl SpecialOrderInput {
 
         Word::from_bits(
             self.values[0] << 34
-                | self.values[1] << 24
-                | self.values[2] << 14
+                | self.values[2] << 24
+                | self.values[1] << 14
                 | self.values[3] << 4
                 | self.selected_order_kind.to_bits(),
         )
