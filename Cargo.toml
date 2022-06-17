@@ -13,8 +13,18 @@ iced_audio = "0.7"
 rfd = "0.8.4"
 log = "0.4"
 
+[dev-dependencies]
+criterion = "0.3"
+
 [[bin]]
 name = "edvac-emulator"
 path = "src/bin.rs"
 
 [lib]
+
+[[bench]]
+name = "additions"
+harness = false
+
+[profile.bench]
+debug = true

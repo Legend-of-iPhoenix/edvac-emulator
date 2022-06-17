@@ -59,14 +59,12 @@ impl HighSpeedMemory {
         }
     }
 
-    #[cfg(test)]
     pub fn load(&mut self, words: Vec<(usize, Word)>) {
         for (addr, word) in words {
             self.set(addr, MemoryMode::default(), word);
         }
     }
 
-    #[cfg(test)]
     #[must_use]
     pub fn dump(&self) -> [Word; 1024] {
         self.bank

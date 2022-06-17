@@ -6,7 +6,7 @@ pub const U43_MAX: u64 = 2_u64.pow(43) - 1;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Word {
     rep: u64,
-    pub value: i64,
+    value: i64,
 }
 
 impl Word {
