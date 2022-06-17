@@ -6,6 +6,8 @@ use crate::{
     Edvac,
 };
 
+use log::debug;
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum OrderKind {
     Compare,
@@ -124,8 +126,6 @@ impl From<Word> for Order {
 
 impl Edvac {
     fn handle_overflow(&mut self, is_div: bool, resume_addr: usize) {
-        println!("Overflow");
-
         let action = if is_div {
             self.state.excess_capacity_action_div
         } else {
@@ -369,6 +369,15 @@ impl Edvac {
     /// Decodes and executes the *provided* order, returning the next order that
     /// is along the execution path, or None.
     pub fn execute_once(&mut self, order: &Order) {
+        debug!(
+            "Execute: {:?} {:0>4o} {:0>4o} {:0>4o} {:0>4o}",
+            order.kind,
+            order.addresses[0],
+            order.addresses[1],
+            order.addresses[2],
+            order.addresses[3],
+        );
+
         let addresses = order.addresses;
 
         match order.kind {

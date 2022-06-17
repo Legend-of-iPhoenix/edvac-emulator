@@ -2,6 +2,8 @@ use crate::orders::Order;
 use crate::wire::{WireShift, WireSpool};
 use crate::word::Word;
 
+use log::trace;
+
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum EdvacStatus {
     Running,
@@ -36,28 +38,15 @@ impl Edvac {
 /// # High-speed memory operations
 impl Edvac {
     pub(crate) fn get(&self, addr: usize) -> Word {
-        println!(
-            "Get {:0>4o}:   {:0>44b} ({})",
-            addr,
-            self.high_speed_memory
-                .get(addr, self.state.memory_mode)
-                .get_bits(),
-            self.high_speed_memory
-                .get(addr, self.state.memory_mode)
-                .value,
-        );
-        self.high_speed_memory.get(addr, self.state.memory_mode)
+        let value = self.high_speed_memory.get(addr, self.state.memory_mode);
+
+        trace!("Get {:0>4o}: {:0>44b}", addr, value.get_bits());
+
+        value
     }
 
     pub(crate) fn set(&mut self, addr: usize, val: Word) {
-        println!(
-            "Set {:0>4o} to {:0>44b}\n        was {:0>44b}",
-            addr,
-            val.get_bits(),
-            self.high_speed_memory
-                .get(addr, self.state.memory_mode)
-                .get_bits(),
-        );
+        trace!("Set {:0>4o} to {:0>44b}", addr, val.get_bits(),);
 
         self.high_speed_memory
             .set(addr, self.state.memory_mode, val);
@@ -68,17 +57,31 @@ impl Edvac {
 impl Edvac {
     pub(crate) fn read_word_from_wire(&mut self, wire_spool: WireSpool) -> Word {
         if let Ok(index) = usize::try_from(wire_spool) {
-            println!("Reading word from wire {}", index);
+            let value = self.low_speed_memory[index].read_word();
 
-            self.low_speed_memory[index].read_word()
+            trace!(
+                "Read Word off Wire {}: {:0>44b}",
+                index + 1,
+                value.get_bits()
+            );
+
+            value
         } else {
-            Word::from_bits(self.state.auxiliary_input_switches.get_bits())
+            let value = self.state.auxiliary_input_switches.get_bits();
+
+            trace!("Read Aux. Input: {:0>44b}", value);
+
+            Word::from_bits(value)
         }
     }
 
     pub(crate) fn read_address_from_wire(&mut self, wire_spool: WireSpool) -> usize {
         if let Ok(index) = usize::try_from(wire_spool) {
-            self.low_speed_memory[index].read_address()
+            let address = self.low_speed_memory[index].read_address();
+
+            trace!("Read Addr. off Wire {}: {:0>4o}", index + 1, address);
+
+            address
         } else {
             unimplemented!()
         }
@@ -86,7 +89,11 @@ impl Edvac {
 
     pub(crate) fn write_word_to_wire(&mut self, wire_spool: WireSpool, word: Word) {
         if let Ok(index) = usize::try_from(wire_spool) {
-            println!("Writing     {:0>44b} to wire {}", word.get_bits(), index);
+            trace!(
+                "Write Word to Wire {}: {:0>44b}",
+                index + 1,
+                word.get_bits()
+            );
 
             self.low_speed_memory[index].write_word(word)
         } else {
@@ -98,7 +105,7 @@ impl Edvac {
         if let Ok(index) = usize::try_from(wire_spool) {
             self.low_speed_memory[index].translate(shift);
         }
-        // else condition is omitted- ire zero is treated as if it has "infinite
+        // else condition is omitted as Wire 0 is treated as if it has "infinite
         // length"
     }
 }
@@ -111,18 +118,8 @@ impl Edvac {
     /// Decodes and executes the next order, appropriately updating the state of
     /// the machine.
     pub fn step_once(&mut self) {
-        println!("======= NEXT CYCLE =======");
+        trace!("======= NEXT ORDER =======");
         let order: Order = self.get(self.state.initial_address_register).into();
-
-        println!(
-            "Ord@{:0>4o}:   {:?} {:0>4o} {:0>4o} {:0>4o} {:0>4o}",
-            self.state.initial_address_register,
-            order.kind,
-            order.addresses[0],
-            order.addresses[1],
-            order.addresses[2],
-            order.addresses[3]
-        );
 
         self.execute_once(&order);
     }
@@ -130,6 +127,7 @@ impl Edvac {
     /// Executes one instruction from the Special Order switches on the front of
     /// the machine.
     pub fn execute_special_order(&mut self) {
+        trace!("======= EXECUTING SPECIAL ORDER =======");
         // save current execution address
         let old_address = self.state.initial_address_register;
 

@@ -11,6 +11,7 @@ iced = "0.3"
 # while this is a non-audio project, there are really nice knobs in iced_audio
 iced_audio = "0.7"
 rfd = "0.8.4"
+log = "0.4"
 
 [[bin]]
 name = "edvac-emulator"
