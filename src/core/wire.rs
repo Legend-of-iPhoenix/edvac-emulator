@@ -1,4 +1,5 @@
 use bitvec::prelude::*;
+use log::error;
 
 use crate::{
     high_speed_memory::ADDRESS_WIDTH,
@@ -67,9 +68,21 @@ impl Wire {
         match shift {
             WireShift::Forward(shift) => {
                 self.index += shift;
+
+                if self.index >= WIRE_SIZE {
+                    self.index = WIRE_SIZE - 1;
+
+                    error!("Attempted to shift a wire past its end point.");
+                }
             }
             WireShift::Backward(shift) => {
-                self.index -= shift;
+                if self.index < shift {
+                    self.index = 0;
+
+                    error!("Attempted to shift a wire past its beginning point.");
+                } else {
+                    self.index -= shift;
+                }
             }
         }
     }
