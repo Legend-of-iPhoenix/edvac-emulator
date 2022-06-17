@@ -119,7 +119,8 @@ impl Wire {
         }
     }
 
-    pub fn write_address(&mut self, address: usize) {
+    /// Per prelim. report pg. 11, the EDVAC can read but not write addresses
+    pub(crate) fn write_address(&mut self, address: usize) {
         let mut bits = address as u64;
 
         for i in 0..=ADDRESS_WIDTH {

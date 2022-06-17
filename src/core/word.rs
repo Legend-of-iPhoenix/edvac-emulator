@@ -44,7 +44,12 @@ impl Word {
         let value = self.value + rhs.value;
 
         if value.unsigned_abs() > U43_MAX {
-            ((value - U43_MAX as i64).try_into().unwrap(), true)
+            // On pgs. 40, 41, 42 of prelim. report they mentioned that the sign
+            // of the sum is always correct; enforce this.
+            let mut word: Word = (value - U43_MAX as i64).try_into().unwrap();
+            word.set_sign(value > 0);
+
+            (word, true)
         } else {
             (value.try_into().unwrap(), false)
         }
@@ -82,18 +87,26 @@ impl Word {
             overflowed = true;
         }
 
-        a = (a % b) << 43;
+        // weird stuff happens with division overflows, see prelim. report pages
+        // 49-52
+        let (mut most_significant_word, mut least_significant_word) = if overflowed {
+            (Word::from_bits(U43_MAX << 1), Word::from_bits(U43_MAX << 1))
+        } else {
+            a = (a % b) << 43;
 
-        let least_significant_half = a.overflowing_div(b).0;
+            let least_significant_half = a.overflowing_div(b).0;
 
-        let mut most_significant_word: Word = ((most_significant_half.abs() & i128::from(U43_MAX))
-            as i64)
-            .try_into()
-            .unwrap();
-        let mut least_significant_word: Word =
-            ((least_significant_half.abs() & i128::from(U43_MAX)) as i64)
+            let most_significant_word: Word = ((most_significant_half.abs() & i128::from(U43_MAX))
+                as i64)
                 .try_into()
                 .unwrap();
+            let least_significant_word: Word =
+                ((least_significant_half.abs() & i128::from(U43_MAX)) as i64)
+                    .try_into()
+                    .unwrap();
+
+            (most_significant_word, least_significant_word)
+        };
 
         most_significant_word.set_sign(most_significant_half < 0);
         least_significant_word.set_sign(most_significant_half < 0);
@@ -138,6 +151,8 @@ impl TryFrom<i64> for Word {
         if abs > U43_MAX {
             Err("Value is too large")
         } else {
+            // From preliminary report, pg. 37: "The computer will decode either
+            // -0 or +0 as 0, but it will encode 0 only as +0"
             Ok(Word {
                 rep: (abs << 1) | u64::from(value.is_negative()),
                 value,

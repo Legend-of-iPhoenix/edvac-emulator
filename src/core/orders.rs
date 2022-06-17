@@ -195,6 +195,10 @@ impl Edvac {
         let next_addr = addresses[3];
         // Decoding for the sub-order is clearly described in FuncDesc pg "6-16"
         // section 6.3.7
+
+        // useful note on recording backward in prelim. report pg. 12; running a
+        // wire backwards reverses the order of the *words* but not the order of
+        // the bits within the words, both while writing and reading.
         let backward = ((sub_order >> 9) & 0b1) != 0;
 
         // See bottom of page "6-17"
