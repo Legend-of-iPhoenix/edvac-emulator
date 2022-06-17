@@ -8,6 +8,8 @@ use ui::threading::{EdvacMessage, StateParameter};
 use iced::{Align, Column, Container, Element, Row, Sandbox, Settings};
 
 pub fn main() {
+    logging::init().ok().unwrap();
+
     App::run(Settings {
         antialiasing: true,
         ..Settings::default()
