@@ -1,4 +1,5 @@
 pub mod address_input;
+pub mod auxiliary_input;
 pub mod button_panels;
 pub mod excess_magnitude_options;
 pub mod logging;

@@ -24,6 +24,8 @@ pub struct App {
 
     operation_buttons: button_panels::OperationButtons,
 
+    auxiliary_input: auxiliary_input::AuxiliaryInput,
+
     excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions,
 
     address_a: address_input::AddressInput,
@@ -38,6 +40,7 @@ pub struct App {
 pub enum Message {
     OperatingMode(operating_mode_input::Message),
     ButtonPressed(button_panels::Message),
+    AuxiliaryInput(auxiliary_input::Message),
     ExcessMagnitudeOptions(excess_magnitude_options::Message),
     AddressA(address_input::Message),
     AddressB(address_input::Message),
@@ -55,6 +58,8 @@ impl Sandbox for App {
             operating_mode: operating_mode_input::OperatingModeInput::default(),
 
             operation_buttons: button_panels::OperationButtons::default(),
+
+            auxiliary_input: auxiliary_input::AuxiliaryInput::default(),
 
             excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions::default(),
 
@@ -89,6 +94,12 @@ impl Sandbox for App {
 
                 _ => {} // unimplemented
             },
+            Message::AuxiliaryInput(m) => {
+                self.computer
+                    .send(EdvacMessage::ModifyState(StateParameter::AuxiliaryInput(
+                        self.auxiliary_input.update(m),
+                    )));
+            }
             Message::ExcessMagnitudeOptions(m) => {
                 let (add, div) = self.excess_magnitude_options.update(m);
 
@@ -140,6 +151,10 @@ impl Sandbox for App {
                             )
                             .style(ContainerStyle),
                         ),
+                    )
+                    .push(
+                        Container::new(self.auxiliary_input.view().map(Message::AuxiliaryInput))
+                            .style(ContainerStyle),
                     )
                     .push(
                         Container::new(

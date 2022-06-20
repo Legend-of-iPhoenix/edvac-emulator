@@ -46,6 +46,8 @@ mod bidi_channel {
 pub enum StateParameter {
     OperatingMode(OperatingMode),
 
+    AuxiliaryInput(Word),
+
     ExcessCapacityActions {
         add: ExcessCapacityAction,
         div: ExcessCapacityAction,
@@ -84,6 +86,9 @@ impl EdvacThread {
                     EdvacMessage::ModifyState(parameter) => match parameter {
                         StateParameter::OperatingMode(mode) => {
                             computer.state.operating_mode = mode;
+                        }
+                        StateParameter::AuxiliaryInput(word) => {
+                            computer.state.auxiliary_input_switches = word;
                         }
                         StateParameter::ExcessCapacityActions { add, div } => {
                             computer.state.excess_capacity_action_add = add;
