@@ -60,6 +60,7 @@ pub enum StateParameter {
 }
 
 pub enum EdvacMessage {
+    Clear,
     Initiate,
     Halt,
 
@@ -81,6 +82,7 @@ impl EdvacThread {
 
             fn handle_message(computer: &mut Edvac, message: EdvacMessage) {
                 match message {
+                    EdvacMessage::Clear => computer.clear_pressed(),
                     EdvacMessage::Initiate => computer.initiate_pressed(),
                     EdvacMessage::Halt => computer.halt_pressed(),
                     EdvacMessage::ModifyState(parameter) => match parameter {

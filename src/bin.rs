@@ -85,6 +85,9 @@ impl Sandbox for App {
                     )));
             }
             Message::ButtonPressed(m) => match m {
+                button_panels::Message::Clear => {
+                    self.computer.send(EdvacMessage::Clear);
+                }
                 button_panels::Message::Initiate => {
                     self.computer.send(EdvacMessage::Initiate);
                 }

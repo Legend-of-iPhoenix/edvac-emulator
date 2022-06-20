@@ -171,14 +171,19 @@ impl Edvac {
 
 /// # Buttons
 impl Edvac {
+    pub fn clear_pressed(&mut self) {
+        // Wires are not flip-flops or internal memory
+        self.state = crate::operating_console::State::default();
+        self.high_speed_memory = crate::high_speed_memory::HighSpeedMemory::default();
+        self.status = EdvacStatus::default();
+    }
+
     pub fn initiate_pressed(&mut self) {
         if let EdvacStatus::Halted { resume_addr } = self.status {
             self.state.initial_address_register = resume_addr;
 
             self.status = EdvacStatus::Running;
         }
-
-        // todo: the various operating modes that initiate can, well, initiate.
     }
 
     pub fn halt_pressed(&mut self) {
