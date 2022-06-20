@@ -20,41 +20,32 @@ impl Default for HighSpeedMemory {
 impl HighSpeedMemory {
     #[must_use]
     pub fn get(&self, addr: usize, mode: MemoryMode) -> Word {
+        assert!(addr < 1024);
+
         match mode {
             MemoryMode::L0 => {
-                assert!(addr < 512);
-
-                self.bank[addr]
+                // Per FuncDesc pg. "5-12"
+                // these "special" memory modes enforce a specific tank "without
+                // regard to the presence or absense of a pulse at 2^9"
+                self.bank[addr % 512]
             }
-            MemoryMode::LR => {
-                assert!(addr < 1024);
-
-                self.bank[addr]
-            }
-            MemoryMode::R1 => {
-                assert!(addr < 512);
-
-                self.bank[addr + 512]
-            }
+            MemoryMode::LR => self.bank[addr],
+            MemoryMode::R1 => self.bank[(addr % 512) + 512],
         }
     }
 
     pub fn set(&mut self, addr: usize, mode: MemoryMode, val: Word) {
+        assert!(addr < 1024);
+
         match mode {
             MemoryMode::L0 => {
-                assert!(addr < 512);
-
-                self.bank[addr] = val;
+                self.bank[addr % 512] = val;
             }
             MemoryMode::LR => {
-                assert!(addr < 1024);
-
                 self.bank[addr] = val;
             }
             MemoryMode::R1 => {
-                assert!(addr < 512);
-
-                self.bank[addr + 512] = val;
+                self.bank[(addr % 512) + 512] = val;
             }
         }
     }

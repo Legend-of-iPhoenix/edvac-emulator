@@ -2,10 +2,7 @@ use iced::{Align, Column, Element, Row, Text};
 
 use iced_audio::{knob, text_marks, tick_marks, IntRange, Knob, Normal};
 
-use super::style::{
-    knob::{BinaryKnobStyle, OctalKnobStyle},
-    text,
-};
+use super::style::knob::{BinaryKnobStyle, OctalKnobStyle};
 
 pub struct AddressInput {
     bin_range: IntRange,

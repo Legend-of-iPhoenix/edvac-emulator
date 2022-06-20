@@ -48,6 +48,8 @@ pub enum ExcessCapacityAction {
     ExecuteAddressB,
 }
 
+// Per Prelim. Report pg 83, the default is "Halt" because overflows usually are
+// signs of errors in programming.
 impl Default for ExcessCapacityAction {
     fn default() -> Self {
         ExcessCapacityAction::Halt
