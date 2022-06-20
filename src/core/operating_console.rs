@@ -15,7 +15,7 @@ pub enum OperatingMode {
 
 impl Default for OperatingMode {
     fn default() -> Self {
-        Self::NormalToCompletion
+        Self::SpecialOneOrder
     }
 }
 
