@@ -58,6 +58,7 @@ pub enum WireShift {
     Backward(usize),
 }
 
+#[derive(Clone)]
 pub struct Wire {
     bits: BitBox,
     index: usize,
