@@ -143,7 +143,23 @@ impl Wire {
 
         wire.index = 0;
 
-        //panic!("{:?}", wire.bits.split_at(54 * 0o1042).0);
+        wire
+    }
+
+    pub fn with_bytes(bytes: Vec<u8>) -> Wire {
+        let mut wire = Wire::default();
+
+        let mut index = 0;
+        bytes.iter().for_each(|&byte| {
+            let mut byte = byte;
+
+            (0..=7).for_each(|_| {
+                let bit = (byte & 0b1) == 0b1;
+                byte >>= 1;
+                wire.bits.set(index, bit);
+                index += 1;
+            });
+        });
 
         wire
     }

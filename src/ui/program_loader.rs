@@ -10,7 +10,8 @@ use edvac::{
 
 use super::style::text;
 pub struct ProgramLoader {
-    button: button::State,
+    button_a: button::State,
+    button_b: button::State,
 
     state: State,
 }
@@ -25,13 +26,15 @@ enum State {
 pub enum Message {
     Dismiss,
     ProgramSelection,
+    DataSelection,
     WireSelected(WireSpool),
 }
 
 impl ProgramLoader {
     pub fn new() -> ProgramLoader {
         ProgramLoader {
-            button: button::State::default(),
+            button_a: button::State::default(),
+            button_b: button::State::default(),
 
             state: State::Ready,
         }
@@ -63,6 +66,19 @@ impl ProgramLoader {
 
                 None
             }
+            Message::DataSelection => {
+                let selection = FileDialog::new()
+                    .add_filter("Uncompressed Binary File", &["bin"])
+                    .pick_file();
+
+                if let Some(path) = selection {
+                    if let Ok(bytes) = fs::read(path) {
+                        self.state = State::Loaded(Wire::with_bytes(bytes));
+                    }
+                }
+
+                None
+            }
             Message::WireSelected(spool) => {
                 let result = if let State::Loaded(wire) = &self.state {
                     Some((spool, wire.clone()))
@@ -84,17 +100,27 @@ impl ProgramLoader {
 
     pub fn view(&mut self) -> Element<Message> {
         match &self.state {
-            State::Ready => Button::new(
-                &mut self.button,
-                Text::new("Load Program").size(text::SIZE_MEDIUM),
-            )
-            .on_press(Message::ProgramSelection)
-            .into(),
+            State::Ready => Column::new()
+                .push(
+                    Button::new(
+                        &mut self.button_a,
+                        Text::new("Load Program").size(text::SIZE_MEDIUM),
+                    )
+                    .on_press(Message::ProgramSelection),
+                )
+                .push(
+                    Button::new(
+                        &mut self.button_b,
+                        Text::new("Load Bytes").size(text::SIZE_MEDIUM),
+                    )
+                    .on_press(Message::DataSelection),
+                )
+                .into(),
             State::Message(text) => Column::new()
                 .push(Text::new(text.clone()).size(text::SIZE_MEDIUM))
                 .push(
                     Button::new(
-                        &mut self.button,
+                        &mut self.button_a,
                         Text::new("Dismiss").size(text::SIZE_MEDIUM),
                     )
                     .on_press(Message::Dismiss),
