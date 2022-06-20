@@ -1,5 +1,5 @@
 use edvac::word::{Word, BIT_WIDTH};
-use iced::{Checkbox, Element, Row};
+use iced::{Align, Checkbox, Column, Element, Row, Text};
 
 // For Maximum Authenticity, this should use small binary toggles but I couldn't
 // find these either in their own crate or in iced itself. Implementing a custom
@@ -42,7 +42,11 @@ impl AuxiliaryInput {
             })
             .rev()
             .collect::<Vec<_>>();
-        Row::with_children(checkboxes).padding(20).spacing(1).into()
+        Column::new()
+            .align_items(Align::Center)
+            .push(Row::with_children(checkboxes).padding(20).spacing(1))
+            .push(Text::new("AUXILIARY INPUT").size(16))
+            .into()
     }
 }
 

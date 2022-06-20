@@ -59,11 +59,12 @@ impl ExcessMagnitudeOptions {
 
     pub fn view(&mut self) -> Element<Message> {
         Row::new()
-            .padding(30)
             .spacing(30)
+            .align_items(Align::End)
             .push(
                 Column::new()
                     .align_items(Align::Center)
+                    .padding(30)
                     .push(
                         Knob::new(&mut self.add_state, Message::Add)
                             .tick_marks(&self.tick_marks)
@@ -86,6 +87,7 @@ impl ExcessMagnitudeOptions {
             )
             .push(
                 Column::new()
+                    .padding(30)
                     .align_items(Align::Center)
                     .push(
                         Knob::new(&mut self.div_state, Message::Div)
