@@ -3,7 +3,7 @@ use iced_audio::{knob, text_marks, tick_marks, IntRange, Knob, Normal};
 
 use edvac::operating_console::ExcessCapacityAction;
 
-use super::style::knob::ExcessMagnitudeKnobStyle;
+use super::style::{knob::ExcessMagnitudeKnobStyle, text};
 
 pub struct ExcessMagnitudeOptions {
     range: IntRange,
@@ -75,14 +75,14 @@ impl ExcessMagnitudeOptions {
                     .push(
                         Row::new()
                             .align_items(Align::End)
-                            .push(Text::new("A ").size(16))
-                            .push(Text::new("OR").size(10))
-                            .push(Text::new(" S").size(16)),
+                            .push(Text::new("A ").size(text::SIZE_LARGE))
+                            .push(Text::new("OR").size(text::SIZE_MEDIUM))
+                            .push(Text::new(" S").size(text::SIZE_LARGE)),
                     ),
             )
             .push(
-                Text::new("EXCESS MAGNITUDE\nOPTIONS")
-                    .size(16)
+                Text::new("EXCESS MAGNITUDE\nOPTION")
+                    .size(text::SIZE_LARGE)
                     .horizontal_alignment(HorizontalAlignment::Center),
             )
             .push(
@@ -99,9 +99,9 @@ impl ExcessMagnitudeOptions {
                     .push(
                         Row::new()
                             .align_items(Align::End)
-                            .push(Text::new("D ").size(16))
-                            .push(Text::new("OR").size(10))
-                            .push(Text::new(" d").size(16)),
+                            .push(Text::new("D ").size(text::SIZE_LARGE))
+                            .push(Text::new("OR").size(text::SIZE_MEDIUM))
+                            .push(Text::new(" d").size(text::SIZE_LARGE)),
                     ),
             )
             .into()

@@ -2,7 +2,10 @@ use iced::{Align, Column, Element, Row, Text};
 
 use iced_audio::{knob, text_marks, tick_marks, IntRange, Knob, Normal};
 
-use super::style::knob::{BinaryKnobStyle, OctalKnobStyle};
+use super::style::{
+    knob::{BinaryKnobStyle, OctalKnobStyle},
+    text,
+};
 
 pub struct AddressInput {
     bin_range: IntRange,
@@ -21,7 +24,7 @@ pub struct AddressInput {
 
     octal_states: (knob::State, knob::State, knob::State),
 
-    title: String,
+    title: Text,
 }
 
 #[derive(Debug, Clone)]
@@ -34,7 +37,7 @@ pub enum Message {
 }
 
 impl AddressInput {
-    pub fn new(title: &str) -> AddressInput {
+    pub fn new(title: Text) -> AddressInput {
         let bin_range = IntRange::new(0, 1);
         let octal_range = IntRange::new(0, 7);
         AddressInput {
@@ -56,7 +59,7 @@ impl AddressInput {
                 knob::State::new(octal_range.default_normal_param()),
             ),
 
-            title: title.into(),
+            title,
         }
     }
 
@@ -115,7 +118,7 @@ impl AddressInput {
                             .style(OctalKnobStyle),
                     ),
             )
-            .push(Text::new(&self.title).size(16))
+            .push(self.title.clone())
             .into()
     }
 }

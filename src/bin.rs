@@ -3,9 +3,10 @@ mod ui;
 use ui::*;
 
 use ui::style::container::ContainerStyle;
+use ui::style::text;
 use ui::threading::{EdvacMessage, StateParameter};
 
-use iced::{Align, Column, Container, Element, Row, Sandbox, Settings};
+use iced::{Align, Column, Container, Element, Row, Sandbox, Settings, Text};
 
 pub fn main() {
     logging::init().ok().unwrap();
@@ -63,8 +64,12 @@ impl Sandbox for App {
 
             excess_magnitude_options: excess_magnitude_options::ExcessMagnitudeOptions::default(),
 
-            address_a: address_input::AddressInput::new("ADDRESS A"),
-            address_b: address_input::AddressInput::new("ADDRESS B"),
+            address_a: address_input::AddressInput::new(
+                Text::new("ADDRESS A").size(text::SIZE_LARGE),
+            ),
+            address_b: address_input::AddressInput::new(
+                Text::new("ADDRESS B").size(text::SIZE_LARGE),
+            ),
 
             special_order: special_order_input::SpecialOrderInput::default(),
 

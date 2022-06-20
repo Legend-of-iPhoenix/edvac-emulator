@@ -6,6 +6,7 @@ use iced::{Align, Column, Element, HorizontalAlignment, Row, Text, VerticalAlign
 
 use super::address_input;
 use super::style::knob::OrderTypeKnobStyle;
+use super::style::text;
 
 /// In the same order as shown on the dial.
 const ORDER_KINDS: [&str; 11] = ["A", "S", "M", "D", "m", "d", "C", "E", "MR", "W", "H"];
@@ -38,10 +39,10 @@ impl SpecialOrderInput {
             selected_order_kind: OrderKind::Add,
 
             addresses: [
-                address_input::AddressInput::new("ADDRESS 1"),
-                address_input::AddressInput::new("ADDRESS 3"),
-                address_input::AddressInput::new("ADDRESS 2"),
-                address_input::AddressInput::new("ADDRESS 4"),
+                address_input::AddressInput::new(Text::new("ADDRESS 1").size(text::SIZE_MEDIUM)),
+                address_input::AddressInput::new(Text::new("ADDRESS 3").size(text::SIZE_MEDIUM)),
+                address_input::AddressInput::new(Text::new("ADDRESS 2").size(text::SIZE_MEDIUM)),
+                address_input::AddressInput::new(Text::new("ADDRESS 4").size(text::SIZE_MEDIUM)),
             ],
             values: [0; 4],
         }
@@ -106,11 +107,11 @@ impl SpecialOrderInput {
                                     .scalar(0.02)
                                     .style(OrderTypeKnobStyle),
                             )
-                            .push(Text::new("TYPE").size(16)),
+                            .push(Text::new("TYPE").size(text::SIZE_MEDIUM)),
                     )
                     .push(
                         Text::new("SPECIAL\nORDER")
-                            .size(16)
+                            .size(text::SIZE_MEDIUM)
                             .horizontal_alignment(HorizontalAlignment::Center)
                             .vertical_alignment(VerticalAlignment::Center),
                     ),

@@ -1,6 +1,6 @@
 use iced::{button, Align, Button, Column, Element, Row, Text};
 
-use super::style::button::ButtonStyle;
+use super::style::{button::ButtonStyle, text};
 
 pub struct OperationButtons {
     clear_button: button::State,
@@ -39,7 +39,7 @@ impl OperationButtons {
                     .push(
                         Column::new()
                             .align_items(Align::Center)
-                            .push(Text::new("CLEAR").size(16))
+                            .push(Text::new("CLEAR").size(text::SIZE_LARGE))
                             .push(
                                 Button::new(&mut self.clear_button, Text::new(""))
                                     .padding(20)
@@ -50,7 +50,7 @@ impl OperationButtons {
                     .push(
                         Column::new()
                             .align_items(Align::Center)
-                            .push(Text::new("INITIATE").size(16))
+                            .push(Text::new("INITIATE").size(text::SIZE_LARGE))
                             .push(
                                 Button::new(&mut self.initiate_button, Text::new(""))
                                     .padding(20)
@@ -61,7 +61,7 @@ impl OperationButtons {
                     .push(
                         Column::new()
                             .align_items(Align::Center)
-                            .push(Text::new("HALT").size(16))
+                            .push(Text::new("HALT").size(text::SIZE_LARGE))
                             .push(
                                 Button::new(&mut self.halt_button, Text::new(""))
                                     .padding(20)
@@ -81,7 +81,7 @@ impl OperationButtons {
                             ),
                     ),
             )
-            .push(Text::new("OPERATION").size(16))
+            .push(Text::new("OPERATION").size(text::SIZE_LARGE))
             .into()
     }
 }

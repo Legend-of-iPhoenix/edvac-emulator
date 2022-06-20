@@ -1,6 +1,8 @@
 use iced::Color;
 use iced_audio::{knob, text_marks, tick_marks, KnobAngleRange};
 
+use super::text;
+
 const STYLE: knob::Style = knob::Style::Circle(knob::CircleStyle {
     color: Color::from_rgb(1.0, 1.0, 1.0),
     border_width: 1.0,
@@ -139,7 +141,7 @@ impl knob::StyleSheet for ExcessMagnitudeKnobStyle {
     fn text_marks_style(&self) -> Option<knob::TextMarksStyle> {
         Some(knob::TextMarksStyle {
             style: text_marks::Style {
-                text_size: 8,
+                text_size: text::SIZE_SMALL,
                 bounds_width: 48,
                 ..Default::default()
             },
@@ -177,31 +179,19 @@ impl knob::StyleSheet for OperatingModeKnobStyle {
     }
 
     fn angle_range(&self) -> KnobAngleRange {
-        KnobAngleRange::from_deg(180.0 - 240.0 / 4.0, 180.0 + 240.0 / 4.0)
+        KnobAngleRange::from_deg(60.0, 359.0)
     }
 
     fn text_marks_style(&self) -> Option<knob::TextMarksStyle> {
         Some(knob::TextMarksStyle {
             style: text_marks::Style {
-                text_size: 8,
-                bounds_width: 48,
+                text_size: text::SIZE_SMALL,
+                bounds_width: 64,
                 ..Default::default()
             },
-            h_char_offset: 1.5,
+            v_offset: 3.0,
+            h_char_offset: 2.0,
             ..Default::default()
-        })
-    }
-
-    fn tick_marks_style(&self) -> Option<knob::TickMarksStyle> {
-        Some(knob::TickMarksStyle {
-            style: tick_marks::Style {
-                tier_2: tick_marks::Shape::Circle {
-                    diameter: 2.0,
-                    color: Color::from_rgb(0.5, 0.5, 0.5),
-                },
-                ..Default::default()
-            },
-            offset: 5.0,
         })
     }
 }
