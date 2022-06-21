@@ -6,7 +6,9 @@ use ui::style::container::ContainerStyle;
 use ui::style::text;
 use ui::threading::{EdvacMessage, StateParameter};
 
-use iced::{Align, Column, Container, Element, Row, Sandbox, Settings, Text};
+use iced::{
+    scrollable, Align, Column, Container, Element, Row, Sandbox, Scrollable, Settings, Text,
+};
 
 pub fn main() {
     logging::init().ok().unwrap();
@@ -20,6 +22,7 @@ pub fn main() {
 
 pub struct App {
     computer: threading::EdvacThread,
+    scroll: scrollable::State,
 
     operating_mode: operating_mode_input::OperatingModeInput,
 
@@ -55,6 +58,7 @@ impl Sandbox for App {
     fn new() -> Self {
         App {
             computer: threading::EdvacThread::default(),
+            scroll: scrollable::State::default(),
 
             operating_mode: operating_mode_input::OperatingModeInput::default(),
 
@@ -144,50 +148,54 @@ impl Sandbox for App {
     fn view(&mut self) -> Element<Self::Message> {
         Row::new()
             .push(
-                Column::new()
-                    .spacing(20)
-                    .align_items(Align::Center)
-                    .push(
-                        Container::new(self.operating_mode.view().map(Message::OperatingMode))
-                            .style(ContainerStyle)
-                            .padding(20),
-                    )
-                    .push(
-                        Row::new().push(
-                            Container::new(
-                                self.operation_buttons.view().map(Message::ButtonPressed),
-                            )
-                            .style(ContainerStyle),
-                        ),
-                    )
-                    .push(
-                        Container::new(self.auxiliary_input.view().map(Message::AuxiliaryInput))
-                            .style(ContainerStyle),
-                    )
-                    .push(
-                        Container::new(
-                            self.excess_magnitude_options
-                                .view()
-                                .map(Message::ExcessMagnitudeOptions),
+                Scrollable::new(&mut self.scroll).push(
+                    Column::new()
+                        .spacing(20)
+                        .align_items(Align::Center)
+                        .push(
+                            Container::new(self.operating_mode.view().map(Message::OperatingMode))
+                                .style(ContainerStyle)
+                                .padding(20),
                         )
-                        .style(ContainerStyle),
-                    )
-                    .push(
-                        Row::new()
-                            .spacing(20)
-                            .push(
-                                Container::new(self.address_a.view().map(Message::AddressA))
-                                    .style(ContainerStyle),
-                            )
-                            .push(
-                                Container::new(self.address_b.view().map(Message::AddressB))
-                                    .style(ContainerStyle),
+                        .push(
+                            Row::new().push(
+                                Container::new(
+                                    self.operation_buttons.view().map(Message::ButtonPressed),
+                                )
+                                .style(ContainerStyle),
                             ),
-                    )
-                    .push(
-                        Container::new(self.special_order.view().map(Message::SpecialOrder))
+                        )
+                        .push(
+                            Container::new(
+                                self.auxiliary_input.view().map(Message::AuxiliaryInput),
+                            )
                             .style(ContainerStyle),
-                    ),
+                        )
+                        .push(
+                            Container::new(
+                                self.excess_magnitude_options
+                                    .view()
+                                    .map(Message::ExcessMagnitudeOptions),
+                            )
+                            .style(ContainerStyle),
+                        )
+                        .push(
+                            Row::new()
+                                .spacing(20)
+                                .push(
+                                    Container::new(self.address_a.view().map(Message::AddressA))
+                                        .style(ContainerStyle),
+                                )
+                                .push(
+                                    Container::new(self.address_b.view().map(Message::AddressB))
+                                        .style(ContainerStyle),
+                                ),
+                        )
+                        .push(
+                            Container::new(self.special_order.view().map(Message::SpecialOrder))
+                                .style(ContainerStyle),
+                        ),
+                ),
             )
             .push(
                 Column::new()
