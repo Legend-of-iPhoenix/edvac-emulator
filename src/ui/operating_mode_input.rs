@@ -18,19 +18,16 @@ pub enum Message {
 impl OperatingModeInput {
     pub fn new() -> OperatingModeInput {
         let mut state = knob::State::new(NormalParam::default());
-        state.set_normal((6.0 / 9.0).into());
+        state.set_normal((5.0 / 6.0).into());
 
         OperatingModeInput {
             text_marks: text_marks::Group::evenly_spaced(&[
-                "",
                 "",
                 "TO COMPLETION",
                 "TO ADDRESS A",
                 "ONE CYCLE",
                 "ONE EXECUTE",
                 "ONE ORDER",
-                "",
-                "",
                 "",
             ]),
 
@@ -42,14 +39,14 @@ impl OperatingModeInput {
     pub fn update(&mut self, message: Message) -> OperatingMode {
         match message {
             Message::Input(normal) => {
-                let (mode, position, is_normal) = match (normal.scale(10.0) as u8, self.is_normal) {
-                    (0..=6, false) => (OperatingMode::SpecialOneOrder, 6.0, false),
-                    (7.., false) => (OperatingMode::NormalToCompletion, 2.0, true),
+                let (mode, position, is_normal) = match (normal.scale(7.0) as u8, self.is_normal) {
+                    (0..=5, false) => (OperatingMode::SpecialOneOrder, 5.0, false),
+                    (5.., false) => (OperatingMode::NormalToCompletion, 1.0, true),
 
-                    (0..=1, true) => (OperatingMode::SpecialOneOrder, 6.0, false),
-                    (2, true) => (OperatingMode::NormalToCompletion, 2.0, true),
-                    (3, true) => (OperatingMode::NormalToAddressA, 3.0, true),
-                    (4.., true) => (OperatingMode::NormalOneOrder, 6.0, true),
+                    (0, true) => (OperatingMode::SpecialOneOrder, 5.0, false),
+                    (1, true) => (OperatingMode::NormalToCompletion, 1.0, true),
+                    (2, true) => (OperatingMode::NormalToAddressA, 2.0, true),
+                    (3.., true) => (OperatingMode::NormalOneOrder, 5.0, true),
                 };
 
                 // snap the visible position while still allowing the knob to be
@@ -57,9 +54,9 @@ impl OperatingModeInput {
                 if self.is_normal != is_normal {
                     self.is_normal = is_normal;
 
-                    self.state.set_normal(Normal::new(position / 9.0));
+                    self.state.set_normal(Normal::new(position / 6.0));
                 } else {
-                    self.state.normal_param.value.set(position / 9.0);
+                    self.state.normal_param.value.set(position / 6.0);
                 }
 
                 mode

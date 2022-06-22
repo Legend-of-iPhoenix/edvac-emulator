@@ -4,7 +4,7 @@ use iced_audio::{knob, text_marks, tick_marks, KnobAngleRange};
 use super::text;
 
 macro_rules! knob_style {
-    ($name:ident, $base_style:ident, $range:expr, $text_size:expr, $text_width:expr) => {
+    ($name:ident, $base_style:ident, $range:expr, $text_size:expr, $text_width:expr, $text_offset:expr) => {
         pub struct $name;
         impl knob::StyleSheet for $name {
             fn active(&self) -> knob::Style {
@@ -30,7 +30,7 @@ macro_rules! knob_style {
                         bounds_width: $text_width,
                         ..Default::default()
                     },
-                    v_offset: -0.75,
+                    v_offset: $text_offset,
                     h_char_offset: 2.0,
                     ..Default::default()
                 })
@@ -65,41 +65,10 @@ const STYLE: knob::Style = knob::Style::Circle(knob::CircleStyle {
     }),
 });
 
-knob_style! {BinaryKnobStyle, STYLE, 30.0, text::SIZE_MEDIUM, 16}
-knob_style! {OctalKnobStyle, STYLE, 240.0, text::SIZE_MEDIUM, 16}
+knob_style! {BinaryKnobStyle, STYLE, 30.0, text::SIZE_MEDIUM, 16, -0.75}
+knob_style! {OctalKnobStyle, STYLE, 240.0, text::SIZE_MEDIUM, 16, -0.75}
 
-knob_style! {OrderTypeKnobStyle, STYLE, 300.0, text::SIZE_MEDIUM, 16}
-knob_style! {ExcessMagnitudeKnobStyle, STYLE, 120.0, text::SIZE_SMALL, 48}
+knob_style! {OrderTypeKnobStyle, STYLE, 300.0, text::SIZE_MEDIUM, 16, -0.75}
+knob_style! {ExcessMagnitudeKnobStyle, STYLE, 120.0, text::SIZE_SMALL, 48, -0.75}
 
-// special case
-pub struct OperatingModeKnobStyle;
-impl knob::StyleSheet for OperatingModeKnobStyle {
-    fn active(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn hovered(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn dragging(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn angle_range(&self) -> KnobAngleRange {
-        KnobAngleRange::from_deg(60.0, 359.0)
-    }
-
-    fn text_marks_style(&self) -> Option<knob::TextMarksStyle> {
-        Some(knob::TextMarksStyle {
-            style: text_marks::Style {
-                text_size: text::SIZE_SMALL,
-                bounds_width: 64,
-                ..Default::default()
-            },
-            v_offset: 3.0,
-            h_char_offset: 2.0,
-            ..Default::default()
-        })
-    }
-}
+knob_style! {OperatingModeKnobStyle, STYLE, 180.0, text::SIZE_SMALL, 64, 3.0}
