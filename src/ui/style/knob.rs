@@ -3,6 +3,55 @@ use iced_audio::{knob, text_marks, tick_marks, KnobAngleRange};
 
 use super::text;
 
+macro_rules! knob_style {
+    ($name:ident, $base_style:ident, $range:expr, $text_size:expr, $text_width:expr) => {
+        pub struct $name;
+        impl knob::StyleSheet for $name {
+            fn active(&self) -> knob::Style {
+                $base_style
+            }
+
+            fn hovered(&self) -> knob::Style {
+                $base_style
+            }
+
+            fn dragging(&self) -> knob::Style {
+                $base_style
+            }
+
+            fn angle_range(&self) -> KnobAngleRange {
+                KnobAngleRange::from_deg(180.0 - ($range) / 2.0, 180.0 + ($range) / 2.0)
+            }
+
+            fn text_marks_style(&self) -> Option<knob::TextMarksStyle> {
+                Some(knob::TextMarksStyle {
+                    style: text_marks::Style {
+                        text_size: $text_size,
+                        bounds_width: $text_width,
+                        ..Default::default()
+                    },
+                    v_offset: -0.75,
+                    h_char_offset: 2.0,
+                    ..Default::default()
+                })
+            }
+
+            fn tick_marks_style(&self) -> Option<knob::TickMarksStyle> {
+                Some(knob::TickMarksStyle {
+                    style: tick_marks::Style {
+                        tier_2: tick_marks::Shape::Circle {
+                            diameter: 2.0,
+                            color: Color::from_rgb(0.5, 0.5, 0.5),
+                        },
+                        ..Default::default()
+                    },
+                    offset: 4.0,
+                })
+            }
+        }
+    };
+}
+
 const STYLE: knob::Style = knob::Style::Circle(knob::CircleStyle {
     color: Color::from_rgb(1.0, 1.0, 1.0),
     border_width: 1.0,
@@ -16,154 +65,13 @@ const STYLE: knob::Style = knob::Style::Circle(knob::CircleStyle {
     }),
 });
 
-pub struct BinaryKnobStyle;
-impl knob::StyleSheet for BinaryKnobStyle {
-    fn active(&self) -> knob::Style {
-        STYLE
-    }
+knob_style! {BinaryKnobStyle, STYLE, 30.0, text::SIZE_MEDIUM, 16}
+knob_style! {OctalKnobStyle, STYLE, 240.0, text::SIZE_MEDIUM, 16}
 
-    fn hovered(&self) -> knob::Style {
-        STYLE
-    }
+knob_style! {OrderTypeKnobStyle, STYLE, 300.0, text::SIZE_MEDIUM, 16}
+knob_style! {ExcessMagnitudeKnobStyle, STYLE, 120.0, text::SIZE_SMALL, 48}
 
-    fn dragging(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn angle_range(&self) -> KnobAngleRange {
-        KnobAngleRange::from_deg(180.0 - 240.0 / 16.0, 180.0 + 240.0 / 16.0)
-    }
-
-    fn text_marks_style(&self) -> Option<knob::TextMarksStyle> {
-        Some(knob::TextMarksStyle::default())
-    }
-
-    fn tick_marks_style(&self) -> Option<knob::TickMarksStyle> {
-        Some(knob::TickMarksStyle {
-            style: tick_marks::Style {
-                tier_2: tick_marks::Shape::Circle {
-                    diameter: 2.0,
-                    color: Color::from_rgb(0.5, 0.5, 0.5),
-                },
-                ..Default::default()
-            },
-            offset: 5.0,
-        })
-    }
-}
-
-pub struct OctalKnobStyle;
-impl knob::StyleSheet for OctalKnobStyle {
-    fn active(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn hovered(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn dragging(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn angle_range(&self) -> KnobAngleRange {
-        KnobAngleRange::from_deg(60.0, 300.0)
-    }
-
-    fn text_marks_style(&self) -> Option<knob::TextMarksStyle> {
-        Some(knob::TextMarksStyle::default())
-    }
-
-    fn tick_marks_style(&self) -> Option<knob::TickMarksStyle> {
-        Some(knob::TickMarksStyle {
-            style: tick_marks::Style {
-                tier_2: tick_marks::Shape::Circle {
-                    diameter: 2.0,
-                    color: Color::from_rgb(0.5, 0.5, 0.5),
-                },
-                ..Default::default()
-            },
-            offset: 5.0,
-        })
-    }
-}
-
-pub struct OrderTypeKnobStyle;
-impl knob::StyleSheet for OrderTypeKnobStyle {
-    fn active(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn hovered(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn dragging(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn text_marks_style(&self) -> Option<knob::TextMarksStyle> {
-        Some(knob::TextMarksStyle::default())
-    }
-
-    fn tick_marks_style(&self) -> Option<knob::TickMarksStyle> {
-        Some(knob::TickMarksStyle {
-            style: tick_marks::Style {
-                tier_2: tick_marks::Shape::Circle {
-                    diameter: 2.0,
-                    color: Color::from_rgb(0.5, 0.5, 0.5),
-                },
-                ..Default::default()
-            },
-            offset: 5.0,
-        })
-    }
-}
-
-pub struct ExcessMagnitudeKnobStyle;
-impl knob::StyleSheet for ExcessMagnitudeKnobStyle {
-    fn active(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn hovered(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn dragging(&self) -> knob::Style {
-        STYLE
-    }
-
-    fn angle_range(&self) -> KnobAngleRange {
-        KnobAngleRange::from_deg(180.0 - 240.0 / 4.0, 180.0 + 240.0 / 4.0)
-    }
-
-    fn text_marks_style(&self) -> Option<knob::TextMarksStyle> {
-        Some(knob::TextMarksStyle {
-            style: text_marks::Style {
-                text_size: text::SIZE_SMALL,
-                bounds_width: 48,
-                ..Default::default()
-            },
-            h_char_offset: 1.5,
-            ..Default::default()
-        })
-    }
-
-    fn tick_marks_style(&self) -> Option<knob::TickMarksStyle> {
-        Some(knob::TickMarksStyle {
-            style: tick_marks::Style {
-                tier_2: tick_marks::Shape::Circle {
-                    diameter: 2.0,
-                    color: Color::from_rgb(0.5, 0.5, 0.5),
-                },
-                ..Default::default()
-            },
-            offset: 5.0,
-        })
-    }
-}
-
+// special case
 pub struct OperatingModeKnobStyle;
 impl knob::StyleSheet for OperatingModeKnobStyle {
     fn active(&self) -> knob::Style {
