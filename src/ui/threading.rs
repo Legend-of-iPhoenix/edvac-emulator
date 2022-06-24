@@ -2,7 +2,7 @@
 use std::thread;
 
 use edvac::{
-    operating_console::{ExcessCapacityAction, OperatingMode},
+    operating_console::{ExcessCapacityAction, MemoryMode, OperatingMode},
     wire::{Wire, WireSpool},
     word::Word,
     EdvacStatus,
@@ -45,6 +45,7 @@ mod bidi_channel {
 
 pub enum StateParameter {
     OperatingMode(OperatingMode),
+    MemoryMode(MemoryMode),
 
     AuxiliaryInput(Word),
 
@@ -88,6 +89,9 @@ impl EdvacThread {
                     EdvacMessage::ModifyState(parameter) => match parameter {
                         StateParameter::OperatingMode(mode) => {
                             computer.state.operating_mode = mode;
+                        }
+                        StateParameter::MemoryMode(mode) => {
+                            computer.state.memory_mode = mode;
                         }
                         StateParameter::AuxiliaryInput(word) => {
                             computer.state.auxiliary_input_switches = word;

@@ -25,6 +25,7 @@ pub struct App {
     scroll: scrollable::State,
 
     operating_mode: operating_mode_input::OperatingModeInput,
+    memory_mode: memory_mode_input::MemoryModeInput,
 
     operation_buttons: button_panels::OperationButtons,
 
@@ -43,6 +44,7 @@ pub struct App {
 #[derive(Debug, Clone)]
 pub enum Message {
     OperatingMode(operating_mode_input::Message),
+    MemoryMode(memory_mode_input::Message),
     ButtonPressed(button_panels::Message),
     AuxiliaryInput(auxiliary_input::Message),
     ExcessMagnitudeOptions(excess_magnitude_options::Message),
@@ -61,6 +63,7 @@ impl Sandbox for App {
             scroll: scrollable::State::default(),
 
             operating_mode: operating_mode_input::OperatingModeInput::default(),
+            memory_mode: memory_mode_input::MemoryModeInput::default(),
 
             operation_buttons: button_panels::OperationButtons::default(),
 
@@ -91,6 +94,12 @@ impl Sandbox for App {
                 self.computer
                     .send(EdvacMessage::ModifyState(StateParameter::OperatingMode(
                         self.operating_mode.update(m),
+                    )));
+            }
+            Message::MemoryMode(m) => {
+                self.computer
+                    .send(EdvacMessage::ModifyState(StateParameter::MemoryMode(
+                        self.memory_mode.update(m),
                     )));
             }
             Message::ButtonPressed(m) => match m {
@@ -153,9 +162,14 @@ impl Sandbox for App {
                         .spacing(20)
                         .align_items(Align::Center)
                         .push(
-                            Container::new(self.operating_mode.view().map(Message::OperatingMode))
-                                .style(ContainerStyle)
-                                .padding(20),
+                            Container::new(
+                                Row::new()
+                                    .spacing(20)
+                                    .push(self.operating_mode.view().map(Message::OperatingMode))
+                                    .push(self.memory_mode.view().map(Message::MemoryMode)),
+                            )
+                            .style(ContainerStyle)
+                            .padding(20),
                         )
                         .push(
                             Row::new().push(

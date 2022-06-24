@@ -72,3 +72,4 @@ knob_style! {OrderTypeKnobStyle, STYLE, 300.0, text::SIZE_MEDIUM, 16, -0.75}
 knob_style! {ExcessMagnitudeKnobStyle, STYLE, 120.0, text::SIZE_SMALL, 48, -0.75}
 
 knob_style! {OperatingModeKnobStyle, STYLE, 180.0, text::SIZE_SMALL, 64, 3.0}
+knob_style! {MemoryModeKnobStyle, STYLE, 60.0, text::SIZE_SMALL, 16, -0.75}
